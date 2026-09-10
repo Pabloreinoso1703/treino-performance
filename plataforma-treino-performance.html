@@ -141,6 +141,19 @@
   .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 10px;}
   .note{font-size:0.76rem;color:var(--muted);margin-top:8px;}
   svg.chart{width:100%;height:140px;display:block;}
+
+  #toast{
+    position:fixed;left:14px;right:14px;bottom:80px;z-index:50;
+    display:flex;flex-direction:column;gap:8px;pointer-events:none;
+  }
+  #toast .msg{
+    background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);
+    color:var(--text);border-radius:10px;padding:12px 14px;font-size:0.85rem;
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);opacity:0;transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  #toast .msg.err{border-left-color:var(--danger);}
+  #toast .msg.show{opacity:1;transform:translateY(0);}
 </style>
 </head>
 <body>
@@ -154,6 +167,8 @@
       <div class="err" id="lockErr"></div>
     </div>
   </div>
+
+  <div id="toast"></div>
 
   <div id="app">
     <header class="top">
@@ -309,7 +324,7 @@
       loadAll();
     }).catch(function(err){
       console.error("Falha no login anônimo do Firebase:", err);
-      alert("Não foi possível conectar ao banco de dados agora. Verifique sua conexão e recarregue a página.");
+      showToast("Não foi possível conectar ao banco de dados agora. Verifique sua conexão e recarregue a página.", true);
     });
   }
 
@@ -335,6 +350,19 @@
   }
 
   function docToObj(doc){ var o = doc.data(); o._id = doc.id; return o; }
+
+  function showToast(msg, isError){
+    var wrap = document.getElementById("toast");
+    var el = document.createElement("div");
+    el.className = "msg" + (isError ? " err" : "");
+    el.textContent = msg;
+    wrap.appendChild(el);
+    requestAnimationFrame(function(){ el.classList.add("show"); });
+    setTimeout(function(){
+      el.classList.remove("show");
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 250);
+    }, 4500);
+  }
 
   function todayISO(){
     var d = new Date();
@@ -581,7 +609,7 @@
       setTab("dashboard");
     }).catch(function(err){
       console.error(err);
-      alert("Não foi possível salvar o treino agora. Verifique sua conexão e tente novamente antes de sair da página.");
+      showToast("Não foi possível salvar o treino agora. Verifique sua conexão e tente novamente antes de sair da página.", true);
     });
   }
 
@@ -669,7 +697,7 @@
       if(!v) return;
       db.collection(COL.body).add({data: todayISO(), peso: v, criadoEm: new Date().toISOString()})
         .then(function(){ loadAll(); })
-        .catch(function(err){ console.error(err); alert("Não foi possível salvar agora."); });
+        .catch(function(err){ console.error(err); showToast("Não foi possível salvar agora.", true); });
     });
   }
 
@@ -719,7 +747,7 @@
         criadoEm: new Date().toISOString()
       };
       db.collection(COL.watch).add(doc).then(function(){ loadAll(); setTab("analise"); })
-        .catch(function(err){ console.error(err); alert("Não foi possível salvar agora."); });
+        .catch(function(err){ console.error(err); showToast("Não foi possível salvar agora.", true); });
     });
   }
 
