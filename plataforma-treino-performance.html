@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Treino e Performance · Pablo</title>
+<style>
+  :root{
+    --bg:#0f1216;
+    --panel:#171b21;
+    --panel2:#1e232b;
+    --border:#2a303a;
+    --text:#eef1f5;
+    --muted:#9aa4b2;
+    --accent:#4fd1a5;
+    --accent2:#4f9dff;
+    --warn:#ffb84f;
+    --danger:#ff6b6b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.45;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  button{font-family:inherit;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---- Lock screen ---- */
+  #lock{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  #lock .card{
+    width:100%;max-width:340px;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);padding:28px 22px;text-align:center;
+  }
+  #lock h1{font-size:1.15rem;margin:0 0 6px;}
+  #lock p{color:var(--muted);font-size:0.85rem;margin:0 0 18px;}
+  #lock input{
+    width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    border-radius:10px;padding:14px;font-size:1rem;text-align:center;margin-bottom:12px;
+    letter-spacing:1px;
+  }
+  #lock button{
+    width:100%;background:var(--accent);color:#06251c;border:none;border-radius:10px;
+    padding:14px;font-size:1rem;font-weight:700;cursor:pointer;
+  }
+  #lock .err{color:var(--danger);font-size:0.82rem;margin-top:10px;min-height:1.1em;}
+
+  /* ---- App shell ---- */
+  #app{display:none;max-width:720px;margin:0 auto;padding:14px 14px 90px;}
+  header.top{padding:6px 2px 14px;}
+  header.top h1{font-size:1.3rem;margin:0 0 2px;}
+  header.top p{margin:0;color:var(--muted);font-size:0.82rem;}
+
+  nav.tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    display:flex;background:var(--panel);border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav.tabs button{
+    flex:1;background:none;border:none;color:var(--muted);font-size:0.68rem;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;
+    cursor:pointer;border-radius:10px;
+  }
+  nav.tabs button .ic{font-size:1.15rem;}
+  nav.tabs button.active{color:var(--accent);background:rgba(79,209,165,0.08);}
+
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px;
+  }
+  .panel h2{margin:0 0 4px;font-size:1.05rem;}
+  .panel .sub{color:var(--muted);font-size:0.82rem;margin-bottom:12px;}
+
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .stat{
+    flex:1 1 100px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;
+    padding:12px;text-align:center;
+  }
+  .stat b{display:block;font-size:1.3rem;color:var(--accent);}
+  .stat span{font-size:0.72rem;color:var(--muted);}
+
+  .daytype-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .daytype-row button{
+    flex:1 1 auto;background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    padding:10px 8px;border-radius:10px;font-size:0.8rem;cursor:pointer;
+  }
+  .daytype-row button.sel{border-color:var(--accent);color:var(--accent);background:rgba(79,209,165,0.08);}
+
+  .exercise{
+    border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--panel2);
+  }
+  .exercise h3{margin:0 0 2px;font-size:0.95rem;}
+  .exercise .meta{color:var(--muted);font-size:0.76rem;margin-bottom:10px;}
+  table.sets{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  table.sets th{color:var(--muted);font-weight:600;font-size:0.68rem;text-transform:uppercase;text-align:left;padding:0 4px 6px;}
+  table.sets td{padding:4px;vertical-align:middle;}
+  table.sets input[type=number]{
+    width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:8px 4px;text-align:center;font-size:0.9rem;
+  }
+  .chk{width:26px;height:26px;accent-color:var(--accent);}
+
+  .btn{
+    display:inline-block;background:var(--accent);color:#06251c;border:none;border-radius:10px;
+    padding:12px 16px;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%;text-align:center;
+  }
+  .btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+  .btn.small{width:auto;padding:8px 12px;font-size:0.8rem;}
+
+  label{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:4px;}
+  .field{margin-bottom:12px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    border-radius:10px;padding:11px;font-size:0.9rem;
+  }
+  .field textarea{min-height:70px;resize:vertical;}
+
+  .hist-item{border-bottom:1px solid var(--border);padding:10px 0;}
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item .row{display:flex;justify-content:space-between;font-size:0.85rem;}
+  .hist-item .row b{color:var(--text);}
+  .hist-item .row span{color:var(--muted);font-size:0.78rem;}
+  .badge{display:inline-block;background:rgba(79,157,255,0.15);color:var(--accent2);border-radius:6px;padding:2px 8px;font-size:0.68rem;margin-right:6px;}
+  .badge.warn{background:rgba(255,184,79,0.15);color:var(--warn);}
+
+  .goal-item{border-left:3px solid var(--accent);padding:6px 0 6px 12px;margin-bottom:10px;}
+  .goal-item h4{margin:0 0 2px;font-size:0.88rem;}
+  .goal-item p{margin:0;color:var(--muted);font-size:0.8rem;}
+
+  .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 10px;}
+  .note{font-size:0.76rem;color:var(--muted);margin-top:8px;}
+  svg.chart{width:100%;height:140px;display:block;}
+</style>
+</head>
+<body>
+
+  <div id="lock">
+    <div class="card">
+      <h1>Treino e Performance</h1>
+      <p>Painel pessoal de treino do Pablo</p>
+      <input id="pw" type="password" inputmode="text" placeholder="Senha" autocomplete="off">
+      <button id="btnEnter">Entrar</button>
+      <div class="err" id="lockErr"></div>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="top">
+      <h1 id="hdrTitle">Dashboard</h1>
+      <p id="hdrSub">—</p>
+    </header>
+
+    <section class="view active" id="view-dashboard"></section>
+    <section class="view" id="view-treino"></section>
+    <section class="view" id="view-historico"></section>
+    <section class="view" id="view-progresso"></section>
+    <section class="view" id="view-analise"></section>
+    <section class="view" id="view-objetivos"></section>
+
+    <nav class="tabs">
+      <button data-tab="dashboard" class="active"><span class="ic">🏠</span>Início</button>
+      <button data-tab="treino"><span class="ic">🏋️</span>Treino</button>
+      <button data-tab="historico"><span class="ic">📜</span>Histórico</button>
+      <button data-tab="progresso"><span class="ic">📈</span>Progresso</button>
+      <button data-tab="analise"><span class="ic">🩺</span>Análise</button>
+      <button data-tab="objetivos"><span class="ic">🎯</span>Metas</button>
+    </nav>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+  var PASSWORD_HASH = "17dc9655b6ba0404604c0add69d7e9fe80a9e07e17bc6451875bfc1c4eebed8a"; // sha256("acad1703")
+  var LOCK_FLAG = "tp_unlocked_v1";
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyDqz6_JnwdZv4i1Y9Gpofwx1DeB63nqtTc",
+    authDomain: "treino-performance-pablo.firebaseapp.com",
+    projectId: "treino-performance-pablo",
+    storageBucket: "treino-performance-pablo.firebasestorage.app",
+    messagingSenderId: "176624490591",
+    appId: "1:176624490591:web:760367197ed73535b523ea"
+  };
+
+  var app = firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+  var db = firebase.firestore();
+
+  var COL = {
+    sessions: "treino_sessions",
+    watch: "treino_watch",
+    subjective: "treino_subjective",
+    body: "treino_body",
+    goals: "treino_goals"
+  };
+
+  /* =========================================================
+     PLANO — Bloco 0 (Semanas 1-2, Fundação)
+     Full-body A/B alternado. RIR = repetições em reserva alvo.
+     Cargas NÃO são pré-definidas: a 1ª vez que cada exercício é
+     feito estabelece a linha de base; dali em diante o app
+     compara com a sessão anterior automaticamente.
+     ========================================================= */
+  var PLANO = {
+    bloco: "Bloco 0 — Fundação (semanas 1-2)",
+    sessoes: {
+      A: {
+        nome: "Full-Body A",
+        aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
+        duracaoEstimada: "50-55 min",
+        exercicios: [
+          {id:"a1", nome:"Supino reto (barra ou halteres)", series:3, reps:"8-12", rir:"3-4", obs:"Priorize técnica sobre carga nesta fase."},
+          {id:"a2", nome:"Remada curvada ou remada máquina", series:3, reps:"8-12", rir:"3-4", obs:""},
+          {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"3-4", obs:"Amplitude confortável, sem dor articular."},
+          {id:"a4", nome:"Desenvolvimento de ombro (halteres/máquina)", series:2, reps:"10-12", rir:"3-4", obs:""},
+          {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", obs:"Reps = segundos sustentados."}
+        ]
+      },
+      B: {
+        nome: "Full-Body B",
+        aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
+        duracaoEstimada: "50-55 min",
+        exercicios: [
+          {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"3-4", obs:"Grupamento que você mais gosta — aproveite."},
+          {id:"b2", nome:"Puxada frontal ou remada unilateral", series:3, reps:"8-12", rir:"3-4", obs:""},
+          {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"3-4", obs:""},
+          {id:"b4", nome:"Elevação lateral", series:2, reps:"12-15", rir:"3-4", obs:""},
+          {id:"b5", nome:"Prancha lateral (cada lado)", series:2, reps:"20-30s", rir:"—", obs:""}
+        ]
+      },
+      COND: {
+        nome: "Condicionamento geral",
+        aquecimento: "3-5 min de caminhada leve antes de acelerar.",
+        duracaoEstimada: "20-30 min",
+        exercicios: [
+          {id:"c1", nome:"Caminhada rápida ou trote leve contínuo", series:1, reps:"20-25 min", rir:"RPE 4-5/10", obs:"Ritmo que ainda permite conversar (zona 2 aproximada). Registre FC média no Apple Watch se possível."}
+        ]
+      }
+    }
+  };
+
+  var TABS = ["dashboard","treino","historico","progresso","analise","objetivos"];
+  var TITLES = {dashboard:"Dashboard", treino:"Treino", historico:"Histórico", progresso:"Progresso", analise:"Análise", objetivos:"Metas"};
+
+  var state = {
+    sessions: [],
+    watch: [],
+    subjective: [],
+    body: [],
+    activeTab: "dashboard",
+    todaySessionKey: null
+  };
+
+  /* =========================================================
+     LOCK / AUTH
+     ========================================================= */
+  function sha256(text){
+    var enc = new TextEncoder().encode(text);
+    return crypto.subtle.digest("SHA-256", enc).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+    });
+  }
+
+  function tryUnlock(){
+    var val = document.getElementById("pw").value || "";
+    sha256(val).then(function(hash){
+      if(hash === PASSWORD_HASH){
+        try{ localStorage.setItem(LOCK_FLAG, "1"); }catch(e){}
+        showApp();
+      } else {
+        document.getElementById("lockErr").textContent = "Senha incorreta.";
+      }
+    });
+  }
+
+  function showApp(){
+    document.getElementById("lock").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    signInAndLoad();
+  }
+
+  document.getElementById("btnEnter").addEventListener("click", tryUnlock);
+  document.getElementById("pw").addEventListener("keydown", function(e){ if(e.key === "Enter") tryUnlock(); });
+
+  var alreadyUnlocked = false;
+  try{ alreadyUnlocked = localStorage.getItem(LOCK_FLAG) === "1"; }catch(e){}
+  if(alreadyUnlocked){ showApp(); }
+
+  function signInAndLoad(){
+    auth.signInAnonymously().then(function(){
+      loadAll();
+    }).catch(function(err){
+      console.error("Falha no login anônimo do Firebase:", err);
+      alert("Não foi possível conectar ao banco de dados agora. Verifique sua conexão e recarregue a página.");
+    });
+  }
+
+  /* =========================================================
+     DATA LAYER
+     ========================================================= */
+  function loadAll(){
+    Promise.all([
+      db.collection(COL.sessions).orderBy("data","desc").limit(60).get(),
+      db.collection(COL.watch).orderBy("data","desc").limit(30).get(),
+      db.collection(COL.subjective).orderBy("data","desc").limit(30).get(),
+      db.collection(COL.body).orderBy("data","desc").limit(60).get()
+    ]).then(function(results){
+      state.sessions = results[0].docs.map(docToObj);
+      state.watch = results[1].docs.map(docToObj);
+      state.subjective = results[2].docs.map(docToObj);
+      state.body = results[3].docs.map(docToObj);
+      renderAll();
+    }).catch(function(err){
+      console.error("Erro ao carregar dados:", err);
+      renderAll();
+    });
+  }
+
+  function docToObj(doc){ var o = doc.data(); o._id = doc.id; return o; }
+
+  function todayISO(){
+    var d = new Date();
+    var tz = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+    return tz.toISOString().slice(0,10);
+  }
+
+  function fmtDateBR(iso){
+    var p = iso.split("-");
+    return p[2] + "/" + p[1] + "/" + p[0];
+  }
+
+  /* =========================================================
+     NAV
+     ========================================================= */
+  document.querySelectorAll("nav.tabs button").forEach(function(btn){
+    btn.addEventListener("click", function(){ setTab(btn.getAttribute("data-tab")); });
+  });
+
+  function setTab(tab){
+    state.activeTab = tab;
+    document.querySelectorAll("nav.tabs button").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab") === tab);
+    });
+    document.querySelectorAll("section.view").forEach(function(s){
+      s.classList.toggle("active", s.id === "view-" + tab);
+    });
+    document.getElementById("hdrTitle").textContent = TITLES[tab];
+    document.getElementById("hdrSub").textContent = fmtDateBR(todayISO());
+    window.scrollTo(0,0);
+  }
+
+  function renderAll(){
+    renderDashboard();
+    renderTreino();
+    renderHistorico();
+    renderProgresso();
+    renderAnalise();
+    renderObjetivos();
+    document.getElementById("hdrSub").textContent = fmtDateBR(todayISO());
+  }
+
+  /* =========================================================
+     Helpers de streak / última sessão
+     ========================================================= */
+  function ultimaSessaoTipo(){
+    var academiaSessions = state.sessions.filter(function(s){ return s.sessaoTipo === "A" || s.sessaoTipo === "B"; });
+    if(academiaSessions.length === 0) return null;
+    return academiaSessions[0].sessaoTipo;
+  }
+
+  function proximaSessaoSugerida(){
+    var ultima = ultimaSessaoTipo();
+    if(ultima === "A") return "B";
+    return "A";
+  }
+
+  function calcStreak(){
+    if(state.sessions.length === 0) return 0;
+    var dates = state.sessions.map(function(s){ return s.data; }).sort().reverse();
+    var streak = 0;
+    var cursor = new Date(todayISO());
+    for(var i=0;i<dates.length;i++){
+      var d = new Date(dates[i]);
+      var diffDays = Math.round((cursor - d) / 86400000);
+      if(diffDays <= (streak===0?2:4)){ streak++; cursor = d; } else { break; }
+    }
+    return streak;
+  }
+
+  /* =========================================================
+     DASHBOARD
+     ========================================================= */
+  var dayTypeChoice = null; // "completo" | "leve" | "sem"
+
+  function renderDashboard(){
+    var el = document.getElementById("view-dashboard");
+    var streak = calcStreak();
+    var totalSessoes = state.sessions.length;
+    var sugestao = proximaSessaoSugerida();
+
+    el.innerHTML =
+      '<div class="panel">' +
+        '<h2>Como está seu dia hoje?</h2>' +
+        '<p class="sub">Isso decide o que aparece na aba Treino. Sem acesso automático à sua agenda ainda — é rápido, um toque.</p>' +
+        '<div class="daytype-row">' +
+          '<button data-day="completo">Dia completo<br><small>Folga / CC leve</small></button>' +
+          '<button data-day="leve">Só um pouco de tempo</button>' +
+          '<button data-day="sem">Sem treino hoje<br><small>PS Diurno / CC1</small></button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="panel">' +
+        '<h2>' + PLANO.bloco + '</h2>' +
+        '<p class="sub">Progressão conservadora por ~2 semanas, depois sobe volume/carga normalmente.</p>' +
+        '<div class="stat-row">' +
+          '<div class="stat"><b>' + streak + '</b><span>dias seguidos</span></div>' +
+          '<div class="stat"><b>' + totalSessoes + '</b><span>treinos registrados</span></div>' +
+          '<div class="stat"><b>' + sugestao + '</b><span>próxima sessão</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      (totalSessoes === 0 ? '<div class="panel"><p class="empty">Ainda não há treinos registrados. Escolha "Dia completo" acima e vá para a aba Treino para começar o primeiro.</p></div>' : '');
+
+    el.querySelectorAll(".daytype-row button").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        dayTypeChoice = btn.getAttribute("data-day");
+        el.querySelectorAll(".daytype-row button").forEach(function(b){ b.classList.remove("sel"); });
+        btn.classList.add("sel");
+        if(dayTypeChoice === "completo" || dayTypeChoice === "leve"){
+          setTab("treino");
+        }
+      });
+    });
+  }
+
+  /* =========================================================
+     TREINO
+     ========================================================= */
+  var sessaoAtual = null; // {key, registros: {exId: [{carga,reps,ok}]}}
+
+  function iniciarSessao(key){
+    var tpl = PLANO.sessoes[key];
+    var registros = {};
+    tpl.exercicios.forEach(function(ex){
+      registros[ex.id] = [];
+      for(var i=0;i<ex.series;i++){ registros[ex.id].push({carga:"", reps:"", ok:false}); }
+    });
+    sessaoAtual = {key: key, registros: registros, rpeGeral:"", obsGeral:""};
+    renderTreino();
+  }
+
+  function ultimoRegistroExercicio(exId){
+    for(var i=0;i<state.sessions.length;i++){
+      var s = state.sessions[i];
+      if(s.exercicios && s.exercicios[exId] && s.exercicios[exId].length){
+        var feitos = s.exercicios[exId].filter(function(r){ return r.ok && r.carga; });
+        if(feitos.length){
+          var last = feitos[feitos.length-1];
+          return {data: s.data, carga: last.carga, reps: last.reps};
+        }
+      }
+    }
+    return null;
+  }
+
+  function melhorMarcaExercicio(exId){
+    var melhor = null;
+    state.sessions.forEach(function(s){
+      if(s.exercicios && s.exercicios[exId]){
+        s.exercicios[exId].forEach(function(r){
+          if(r.ok && r.carga){
+            var c = parseFloat(r.carga);
+            if(!melhor || c > melhor) melhor = c;
+          }
+        });
+      }
+    });
+    return melhor;
+  }
+
+  function renderTreino(){
+    var el = document.getElementById("view-treino");
+
+    if(!sessaoAtual){
+      el.innerHTML =
+        '<div class="panel">' +
+          '<h2>Escolha a sessão de hoje</h2>' +
+          '<p class="sub">Sugestão com base no seu histórico: <b>' + proximaSessaoSugerida() + '</b></p>' +
+          '<div class="daytype-row">' +
+            '<button class="btn-sessao" data-s="A">Full-Body A</button>' +
+            '<button class="btn-sessao" data-s="B">Full-Body B</button>' +
+            '<button class="btn-sessao" data-s="COND">Condicionamento</button>' +
+          '</div>' +
+        '</div>';
+      el.querySelectorAll(".btn-sessao").forEach(function(btn){
+        btn.addEventListener("click", function(){ iniciarSessao(btn.getAttribute("data-s")); });
+      });
+      return;
+    }
+
+    var tpl = PLANO.sessoes[sessaoAtual.key];
+    var html = '<div class="panel"><h2>' + tpl.nome + '</h2>' +
+      '<p class="sub">' + tpl.aquecimento + ' · Duração estimada: ' + tpl.duracaoEstimada + '</p></div>';
+
+    tpl.exercicios.forEach(function(ex){
+      var ultimo = ultimoRegistroExercicio(ex.id);
+      var melhor = melhorMarcaExercicio(ex.id);
+      html += '<div class="exercise" data-ex="' + ex.id + '">' +
+        '<h3>' + ex.nome + '</h3>' +
+        '<div class="meta">' + ex.series + ' séries x ' + ex.reps + ' · RIR alvo ' + ex.rir +
+          (ultimo ? ' · Última vez: ' + ultimo.carga + 'kg x ' + ultimo.reps : ' · Primeira vez — essa carga vira sua base') +
+          (melhor ? ' · Melhor marca: ' + melhor + 'kg' : '') +
+        '</div>' +
+        (ex.obs ? '<div class="meta">💡 ' + ex.obs + '</div>' : '') +
+        '<table class="sets"><tr><th>Série</th><th>Carga (kg)</th><th>Reps</th><th>OK</th></tr>';
+      for(var i=0;i<ex.series;i++){
+        var r = sessaoAtual.registros[ex.id][i];
+        html += '<tr>' +
+          '<td>' + (i+1) + '</td>' +
+          '<td><input type="number" inputmode="decimal" step="0.5" data-ex="' + ex.id + '" data-i="' + i + '" data-f="carga" value="' + r.carga + '"></td>' +
+          '<td><input type="number" inputmode="numeric" data-ex="' + ex.id + '" data-i="' + i + '" data-f="reps" value="' + r.reps + '"></td>' +
+          '<td style="text-align:center"><input type="checkbox" class="chk" data-ex="' + ex.id + '" data-i="' + i + '" data-f="ok" ' + (r.ok?'checked':'') + '></td>' +
+          '</tr>';
+      }
+      html += '</table></div>';
+    });
+
+    html += '<div class="panel">' +
+      '<div class="field"><label>RPE geral da sessão (1-10)</label><input type="number" min="1" max="10" id="rpeGeral" value="' + sessaoAtual.rpeGeral + '"></div>' +
+      '<div class="field"><label>Observações (dor, dificuldade, sensação)</label><textarea id="obsGeral">' + sessaoAtual.obsGeral + '</textarea></div>' +
+      '<button class="btn" id="btnFinalizar">Finalizar e salvar treino</button>' +
+      '<button class="btn secondary" id="btnCancelar" style="margin-top:8px;">Cancelar sessão</button>' +
+    '</div>';
+
+    el.innerHTML = html;
+
+    el.querySelectorAll('input[type=number][data-ex], input[type=checkbox][data-ex]').forEach(function(inp){
+      inp.addEventListener("change", function(){
+        var exId = inp.getAttribute("data-ex"), i = parseInt(inp.getAttribute("data-i"),10), f = inp.getAttribute("data-f");
+        if(f === "ok") sessaoAtual.registros[exId][i][f] = inp.checked;
+        else sessaoAtual.registros[exId][i][f] = inp.value;
+      });
+    });
+    document.getElementById("rpeGeral").addEventListener("input", function(e){ sessaoAtual.rpeGeral = e.target.value; });
+    document.getElementById("obsGeral").addEventListener("input", function(e){ sessaoAtual.obsGeral = e.target.value; });
+    document.getElementById("btnFinalizar").addEventListener("click", finalizarSessao);
+    document.getElementById("btnCancelar").addEventListener("click", function(){ sessaoAtual = null; renderTreino(); });
+  }
+
+  function finalizarSessao(){
+    var doc = {
+      data: todayISO(),
+      sessaoTipo: sessaoAtual.key,
+      nomeSessao: PLANO.sessoes[sessaoAtual.key].nome,
+      exercicios: sessaoAtual.registros,
+      rpeGeral: sessaoAtual.rpeGeral,
+      observacoes: sessaoAtual.obsGeral,
+      criadoEm: new Date().toISOString()
+    };
+    db.collection(COL.sessions).add(doc).then(function(){
+      sessaoAtual = null;
+      loadAll();
+      setTab("dashboard");
+    }).catch(function(err){
+      console.error(err);
+      alert("Não foi possível salvar o treino agora. Verifique sua conexão e tente novamente antes de sair da página.");
+    });
+  }
+
+  /* =========================================================
+     HISTÓRICO
+     ========================================================= */
+  function renderHistorico(){
+    var el = document.getElementById("view-historico");
+    if(state.sessions.length === 0){
+      el.innerHTML = '<div class="panel"><p class="empty">Nenhum treino registrado ainda.</p></div>';
+      return;
+    }
+    var html = '<div class="panel"><h2>Treinos realizados</h2>';
+    state.sessions.forEach(function(s){
+      var totalSeries = 0, seriesFeitas = 0;
+      if(s.exercicios){
+        Object.keys(s.exercicios).forEach(function(k){
+          s.exercicios[k].forEach(function(r){ totalSeries++; if(r.ok) seriesFeitas++; });
+        });
+      }
+      html += '<div class="hist-item"><div class="row"><b>' + fmtDateBR(s.data) + ' · ' + (s.nomeSessao||s.sessaoTipo) + '</b>' +
+        '<span>RPE ' + (s.rpeGeral||"—") + '</span></div>' +
+        '<div class="row"><span>' + seriesFeitas + '/' + totalSeries + ' séries concluídas</span>' +
+        (s.observacoes ? '<span>' + s.observacoes.slice(0,40) + (s.observacoes.length>40?'…':'') + '</span>' : '<span></span>') +
+        '</div></div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  /* =========================================================
+     PROGRESSO
+     ========================================================= */
+  function sparkline(points, color){
+    if(points.length < 2) return '<p class="empty">Precisa de pelo menos 2 registros pra desenhar o gráfico.</p>';
+    var w = 300, h = 120, pad = 10;
+    var vals = points.map(function(p){ return p.v; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if(min === max){ min -= 1; max += 1; }
+    var stepX = (w - pad*2) / (points.length - 1);
+    var path = points.map(function(p,i){
+      var x = pad + i*stepX;
+      var y = h - pad - ((p.v - min) / (max - min)) * (h - pad*2);
+      return (i===0?"M":"L") + x.toFixed(1) + "," + y.toFixed(1);
+    }).join(" ");
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<path d="' + path + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+
+  function renderProgresso(){
+    var el = document.getElementById("view-progresso");
+    var html = "";
+
+    // Peso corporal
+    var pesos = state.body.slice().reverse().filter(function(b){ return b.peso; })
+      .map(function(b){ return {v: parseFloat(b.peso), data: b.data}; });
+    html += '<div class="panel"><h2>Peso corporal</h2>' + sparkline(pesos, "#4fd1a5") +
+      (pesos.length ? '<p class="note">Último: ' + pesos[pesos.length-1].v + 'kg em ' + fmtDateBR(pesos[pesos.length-1].data) + '</p>' : '') + '</div>';
+
+    // Carga por exercício principal (supino como referência do bloco 0)
+    var cargasSupino = [];
+    state.sessions.slice().reverse().forEach(function(s){
+      ["a1","b1"].forEach(function(exId){
+        if(s.exercicios && s.exercicios[exId]){
+          var feitos = s.exercicios[exId].filter(function(r){ return r.ok && r.carga; });
+          if(feitos.length){ cargasSupino.push({v: parseFloat(feitos[feitos.length-1].carga), data: s.data}); }
+        }
+      });
+    });
+    html += '<div class="panel"><h2>Carga · Supino (reto/inclinado)</h2>' + sparkline(cargasSupino, "#4f9dff") + '</div>';
+
+    // RPE ao longo do tempo
+    var rpes = state.sessions.slice().reverse().filter(function(s){ return s.rpeGeral; })
+      .map(function(s){ return {v: parseFloat(s.rpeGeral), data: s.data}; });
+    html += '<div class="panel"><h2>RPE por sessão</h2>' + sparkline(rpes, "#ffb84f") + '</div>';
+
+    html += '<div class="panel"><h2>Registrar peso corporal</h2>' +
+      '<div class="field"><label>Peso hoje (kg)</label><input type="number" step="0.1" id="pesoHoje" placeholder="Ex: 87.5"></div>' +
+      '<button class="btn" id="btnSalvarPeso">Salvar</button></div>';
+
+    el.innerHTML = html;
+    document.getElementById("btnSalvarPeso").addEventListener("click", function(){
+      var v = document.getElementById("pesoHoje").value;
+      if(!v) return;
+      db.collection(COL.body).add({data: todayISO(), peso: v, criadoEm: new Date().toISOString()})
+        .then(function(){ loadAll(); })
+        .catch(function(err){ console.error(err); alert("Não foi possível salvar agora."); });
+    });
+  }
+
+  /* =========================================================
+     ANÁLISE
+     ========================================================= */
+  function renderAnalise(){
+    var el = document.getElementById("view-analise");
+    var html = '<div class="panel">' +
+      '<h2>Registrar dados do Apple Watch</h2>' +
+      '<p class="sub">Dados medidos pelo relógio + sua percepção. Sem sincronização automática — é você quem digita aqui depois do treino.</p>' +
+      '<div class="field"><label>Duração (min)</label><input type="number" id="wDuracao"></div>' +
+      '<div class="field"><label>Distância (km, se aplicável)</label><input type="number" step="0.01" id="wDistancia"></div>' +
+      '<div class="field"><label>FC média (bpm)</label><input type="number" id="wFcMedia"></div>' +
+      '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="wFcMax"></div>' +
+      '<div class="field"><label>Calorias</label><input type="number" id="wCalorias"></div>' +
+      '<div class="field"><label>RPE desse esforço (1-10)</label><input type="number" min="1" max="10" id="wRpe"></div>' +
+      '<div class="field"><label>Sono da noite anterior (horas aprox.)</label><input type="number" step="0.5" id="wSono"></div>' +
+      '<div class="field"><label>Sensação de recuperação/fadiga</label><textarea id="wObs" placeholder="Ex: senti mais cansado que o normal, dor leve no ombro, etc."></textarea></div>' +
+      '<button class="btn" id="btnSalvarAnalise">Salvar registro</button>' +
+      '<p class="note">Depois de salvar, traga esses números pra nossa conversa — a interpretação (o que isso significa pro próximo treino) eu faço com você, não um algoritmo automático aqui dentro.</p>' +
+      '</div>';
+
+    html += '<div class="panel"><h2>Registros anteriores</h2>';
+    if(state.watch.length === 0){
+      html += '<p class="empty">Nenhum registro ainda.</p>';
+    } else {
+      state.watch.forEach(function(w){
+        html += '<div class="hist-item"><div class="row"><b>' + fmtDateBR(w.data) + '</b><span>RPE ' + (w.rpe||"—") + '</span></div>' +
+          '<div class="row"><span>' + (w.duracao?w.duracao+"min":"") + (w.distancia?" · "+w.distancia+"km":"") + (w.fcMedia?" · FC méd "+w.fcMedia:"") + '</span><span></span></div></div>';
+      });
+    }
+    html += '</div>';
+
+    el.innerHTML = html;
+    document.getElementById("btnSalvarAnalise").addEventListener("click", function(){
+      var doc = {
+        data: todayISO(),
+        duracao: document.getElementById("wDuracao").value,
+        distancia: document.getElementById("wDistancia").value,
+        fcMedia: document.getElementById("wFcMedia").value,
+        fcMax: document.getElementById("wFcMax").value,
+        calorias: document.getElementById("wCalorias").value,
+        rpe: document.getElementById("wRpe").value,
+        sono: document.getElementById("wSono").value,
+        observacoes: document.getElementById("wObs").value,
+        criadoEm: new Date().toISOString()
+      };
+      db.collection(COL.watch).add(doc).then(function(){ loadAll(); setTab("analise"); })
+        .catch(function(err){ console.error(err); alert("Não foi possível salvar agora."); });
+    });
+  }
+
+  /* =========================================================
+     OBJETIVOS
+     ========================================================= */
+  var METAS = [
+    {prazo:"4 semanas", texto:"Completar 70-80% das sessões planejadas, progressão de carga documentada nos exercícios principais, e 1º teste de referência de condicionamento registrado."},
+    {prazo:"3 meses", texto:"Ganho de força mensurável nos principais movimentos, melhora perceptível de resistência vs. linha de base do mês 1, refeição extra incorporada como hábito."},
+    {prazo:"6-12 meses", texto:"Composição corporal: aproximadamente -3% a -5% de gordura corporal e +1 a 3kg de massa magra. Condicionamento com FC mais eficiente para o mesmo esforço, com transferência real pro tênis."}
+  ];
+
+  function renderObjetivos(){
+    var el = document.getElementById("view-objetivos");
+    var html = '<div class="panel"><h2>Objetivo principal</h2>' +
+      '<p class="sub">Composição corporal + condicionamento físico, com transferência real pro tênis, e eficiência cardiovascular (FC menor para o mesmo esforço).</p></div>';
+    html += '<div class="panel"><h2>Metas por prazo</h2>';
+    METAS.forEach(function(m){
+      html += '<div class="goal-item"><h4>' + m.prazo + '</h4><p>' + m.texto + '</p></div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+})();
+</script>
+</body>
+</html>
