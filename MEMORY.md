@@ -149,3 +149,23 @@ Reaproveitei `test3.js`/`test4.js`/`test5.js` sem mudança de expectativas de l�
 
 ### Pendências no fim da Sessão 3.2
 - Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real (esse é o teste mais importante agora — a silhueta em tela pequena e a legibilidade dos contornos finos precisam ser conferidas na prática).
+
+## Sessão 3.3 — 13/09/2026 — Mapa muscular v4 (foto real + overlay de cor)
+
+Pablo continuou sem gostar do resultado desenhado à mão e mandou duas fotos anatômicas realistas (frente + costas), dessa vez dizendo que **ele mesmo montou/gerou essas imagens por IA** — diferente da Sessão 3.2, onde as imagens eram de banco de imagens com marca d'água de terceiro. Sem a barreira de direitos autorais de terceiros, incorporei as fotos de verdade no app, como ele pediu.
+
+### O problema técnico a resolver
+Uma foto estática não pode ser "recolorida" por região do jeito que uma forma SVG desenhada à mão pode (bastava trocar o atributo `fill`). Mas a coloração dinâmica por grupamento (verde/azul/amarelo/vermelho conforme dado real de treino) é o requisito central do mapa muscular (regra 12) — não dava pra abrir mão disso só pra usar a foto.
+
+### Solução: foto como base + "glow" de cor por cima (v4)
+- As duas fotos foram comprimidas (PNG → WebP, redimensionadas pra ~480px de largura) e embutidas como `data:` URI dentro de um `<image>` no próprio `<svg>` — mantém a regra do arquivo único, sem depender de asset externo. Tamanho final: ~66KB no total (front ~15KB, back ~50KB em base64), aumento pequeno no HTML.
+- Por cima da foto, cada grupamento muscular ganhou uma ou duas elipses translúcidas (`mix-blend-mode:multiply`, `fill-opacity:0.6`) posicionadas na região real onde aquele músculo aparece na foto (coordenadas calibradas visualmente, olhando a foto com um grid de %). A cor dessas elipses continua vindo 100% de `computeMuscleStatus()` — a foto em si nunca muda, só a "luz" colorida por cima dela, exatamente como no próprio exemplo que o Pablo mandou (a foto de frente que ele enviou já tinha um destaque avermelhado nos ombros, ilustrando o efeito que ele queria).
+- Como a foto de frente enviada já vinha com esse destaque vermelho embutido nos ombros (não dava pra usar como base neutra do jeito que estava — ficaria sempre "vermelho" ali), neutralizei essa área por processamento de imagem: troquei o matiz/saturação dos pixels avermelhados pra bater com o tom de pele do resto do corpo, preservando a luz/sombra reais do desenho (não foi um "remendo"/blur, foi um ajuste de cor pixel a pixel na região identificada). O resultado ficou consistente com a foto de costas (que já era neutra).
+- `mirroredShape`/`soloShape`/`baseSilhouette` (as funções de desenho SVG hand-coded) foram removidas — não são mais usadas. No lugar entraram `mirroredGlow`/`soloGlow`, mais simples (só elipse + cor, sem stroke, já que o contorno anatômico agora vem da foto de verdade).
+- Cobertura dos 10 grupamentos continua igual (`ALL_MUSCLE_GROUPS`); `costas` agora é representado por 2 elipses (trapézio + latíssimo) em vez das ~5 formas separadas de antes, já que a subdivisão anatômica fininha não faz mais sentido do mesmo jeito numa foto (a foto já mostra o detalhe real; a elipse só marca "essa região está com esse status").
+
+### Testes
+`test3.js`, `test4.js` e `test5.js` rodaram sem nenhuma mudança de código — só a contagem informativa de `.mm-shape` mudou pra 21 (10 na frente + 11 nas costas, já que `costas` agora usa 2 formas). Toda a lógica de cor/status validada nas sessões anteriores (vermelho hoje, azul <48h, amarelo volume baixo, verde recuperado) continua batendo certinho por cima da nova base visual — a mudança foi só na camada de desenho, a lógica de dados não foi tocada.
+
+### Pendências no fim da Sessão 3.3
+- Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
