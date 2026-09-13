@@ -169,3 +169,26 @@ Uma foto estática não pode ser "recolorida" por região do jeito que uma forma
 
 ### Pendências no fim da Sessão 3.3
 - Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
+
+## Sessão 3.4 — 13/09/2026 — Mapa muscular v5 (contorno exato, sem glow)
+
+Pablo mandou mais uma referência (print de banco de imagens — só como exemplo de técnica dessa vez, não pediu pra copiar o desenho) mostrando o deltoide pintado sólido, exatamente dentro do contorno real do músculo, sem nenhum efeito de "auréola"/gradiente. Feedback: "não quero que faça esse glow colorido, quero que pinte exatamente no contorno do grupo muscular trabalhado (...) sem abranger um glow/círculo pintado. Quero o mais realista possível."
+
+### Problema técnico
+A v4 (glow com `mix-blend-mode:multiply` sobre elipses) resolvia a coloração dinâmica em cima da foto real, mas a elipse é uma aproximação grosseira — não segue o formato real do músculo, então em alguns ângulos parecia "manchado" em vez de "pintado no lugar certo".
+
+### Solução (v5)
+- **Segmentação de imagem, feita uma vez offline em Python** (não em runtime no navegador) pra extrair o contorno real de cada grupamento a partir da própria foto:
+  - **Foto de costas**: tem linhas anatômicas bem fechadas (é um estilo mais "prancha/flat" que a de frente) — cada músculo virou uma região conectada isolável automaticamente por flood-fill limitado pelas próprias linhas de contorno da ilustração (`scipy.ndimage.label` sobre a máscara de "não-linha"), seguido de `cv2.findContours` + `approxPolyDP` pra simplificar o contorno em poucos pontos de um `<path>` SVG. Funcionou muito bem — praticamente automático pra ombro, costas (trapézio+latíssimo), tríceps, glúteos, isquiotibiais e panturrilha.
+  - **Foto de frente**: o estilo é mais "sombreado" (gradiente de luz/sombra em vez de linha fechada entre deltoide↔peitoral↔bíceps), então a segmentação automática pura fundia tudo num blob só. Pra essa vista, os cortes internos (onde um músculo termina e o outro começa) foram calibrados manualmente, mas sempre **dentro da máscara de silhueta real da foto** (nunca "inventando" um contorno solto) — ou seja, o corte interno é estimado, mas a borda externa de cada forma sempre bate exatamente com o contorno de pele de verdade da imagem, nunca vaza pro fundo branco.
+- O resultado de cada grupamento é uma lista de contornos (`FRONT_PATHS`/`BACK_PATHS`, um array de `d` de `<path>` por grupamento, já no espaço de coordenadas do viewBox de cada vista) pintados com `muscleShape(d, mg, fill)` — `fill-opacity` subiu de 0.6 (v4) pra 0.78, porque agora que o contorno é preciso, uma cor mais sólida lê como "esse músculo está com esse status" em vez de manchar.
+- `mirroredGlow`/`soloGlow` (funções de elipse da v4) foram removidas — não fazem mais sentido com contorno real disponível.
+
+### Limitação registrada (regra 12 do CLAUDE.md)
+Diferente da v3 (SVG 100% gerado por código/fórmula), na v5 a forma de cada músculo "pertence" à foto — se um exercício novo precisar de um grupamento que hoje não tem contorno extraído, não dá pra só editar `MUSCLE_MAP`, precisa re-rodar a segmentação (processo manual/Python) pra esse grupamento. Registrado pra não esquecer no futuro.
+
+### Testes
+`test3.js`/`test4.js`/`test5.js` rodaram sem mudança nenhuma de código de teste — só a contagem de `.mm-shape` mudou pra 35 (mais de um `<path>` por grupamento em alguns casos, ex.: costas e glúteos saíram da segmentação como múltiplos pedaços conectados). Toda a lógica de cor/status validada nas sessões anteriores continua batendo certinho.
+
+### Pendências no fim da Sessão 3.4
+- Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
