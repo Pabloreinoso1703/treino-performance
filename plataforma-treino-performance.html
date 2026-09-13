@@ -245,21 +245,16 @@
   .week-day.trained .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700;}
   .week-day.today .dow{color:var(--accent);font-weight:700;}
 
-  /* ---- Mapa muscular ---- */
-  .muscle-map-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
-  .muscle-svg{width:100%;max-width:220px;height:auto;}
-  .muscle-svg .mm-shape{cursor:pointer;transition:opacity .15s ease;stroke:rgba(0,0,0,0.35);stroke-width:1;}
-  .muscle-svg .mm-shape:active{opacity:0.75;}
-  .muscle-legend{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:4px;}
+  /* ---- Mapa muscular (frente + costas lado a lado) ---- */
+  .muscle-map-wrap{display:flex;gap:10px;justify-content:center;align-items:flex-start;}
+  .muscle-view{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1 1 0;max-width:170px;}
+  .muscle-view-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;}
+  .muscle-svg{width:100%;height:auto;}
+  .muscle-svg .mm-shape{cursor:pointer;transition:opacity .15s ease;stroke:rgba(0,0,0,0.4);stroke-width:1;}
+  .muscle-svg .mm-shape:active{opacity:0.7;}
+  .muscle-legend{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:12px;}
   .muscle-legend .li{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);}
   .muscle-legend .li .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;}
-  .muscle-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px;}
-  .muscle-chip{
-    display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);
-    border-radius:999px;padding:5px 10px 5px 8px;font-size:0.74rem;color:var(--text);cursor:pointer;
-  }
-  .muscle-chip .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
-  .muscle-map-note{font-size:0.72rem;color:var(--muted);text-align:center;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -370,27 +365,26 @@
   // (c1 — caminhada/trote — fica de fora: é condicionamento, não trabalho
   // de força localizado num grupamento específico).
   var MUSCLE_MAP = {
-    a1: ["peito"],
+    a1: ["peito", "triceps"],
     a2: ["costas"],
     a3: ["quadriceps", "gluteos"],
-    a4: ["ombros"],
+    a4: ["ombros", "triceps"],
     a5: ["abdomen"],
-    b1: ["peito"],
+    b1: ["peito", "triceps"],
     b2: ["costas"],
     b3: ["posterior_coxa", "gluteos"],
     b4: ["ombros"],
     b5: ["abdomen"]
   };
 
-  // Grupamentos visíveis no desenho de corpo (vista frontal) vs. os que só
-  // aparecem como "chip" abaixo do desenho (grupamentos de cadeia posterior,
-  // que não dá pra ver numa silhueta de frente).
-  var MUSCLE_GROUPS_FRONT = ["ombros", "peito", "biceps", "abdomen", "quadriceps", "panturrilha"];
-  var MUSCLE_GROUPS_BACK = ["costas", "gluteos", "posterior_coxa"];
+  // Todos os grupamentos rastreados. Cada um tem forma própria desenhada na
+  // silhueta (vista de frente e/ou de costas, conforme onde o músculo é
+  // visível de verdade) — nada fica só como legenda de texto.
+  var ALL_MUSCLE_GROUPS = ["ombros", "peito", "biceps", "triceps", "abdomen", "costas", "gluteos", "quadriceps", "posterior_coxa", "panturrilha"];
   var MUSCLE_GROUP_LABELS = {
-    ombros: "Ombros", peito: "Peito", biceps: "Bíceps", abdomen: "Abdômen",
-    quadriceps: "Quadríceps", panturrilha: "Panturrilha",
-    costas: "Costas", gluteos: "Glúteos", posterior_coxa: "Posterior de coxa"
+    ombros: "Ombros (deltoide)", peito: "Peitoral", biceps: "Bíceps", triceps: "Tríceps",
+    abdomen: "Abdômen / oblíquos", quadriceps: "Quadríceps", panturrilha: "Panturrilha",
+    costas: "Costas (trapézio, latíssimo, romboides)", gluteos: "Glúteos", posterior_coxa: "Posterior de coxa (isquiotibiais)"
   };
 
   /* =========================================================
@@ -795,7 +789,7 @@
        verde    = recuperado/pronto (ou ainda sem dados)
      ========================================================= */
   function computeMuscleStatus(){
-    var ALL_GROUPS = MUSCLE_GROUPS_FRONT.concat(MUSCLE_GROUPS_BACK);
+    var ALL_GROUPS = ALL_MUSCLE_GROUPS;
     var status = {};
     ALL_GROUPS.forEach(function(mg){ status[mg] = {status:"verde", diasDesde:null, seriesSemana:0}; });
     if(state.sessions.length === 0) return status;
@@ -834,8 +828,21 @@
     return status;
   }
 
+  // Desenha uma forma (path/rect/ellipse) do lado esquerdo do corpo e devolve
+  // ELA + uma cópia espelhada (mesmo "d", mesma cor) do lado direito, usando
+  // transform SVG em vez de recalcular coordenadas na mão — assim cada par
+  // simétrico de músculo (ombro, braço, perna) só precisa ser desenhado uma
+  // vez. O espelho é em torno do eixo x=100 (metade de um viewBox 0 0 200 *).
+  function mirroredShape(tag, attrs, mg, fill){
+    var attrStr = Object.keys(attrs).map(function(k){ return k + '="' + attrs[k] + '"'; }).join(" ");
+    var mgAttr = mg ? ' class="mm-shape" data-mg="' + mg + '"' : "";
+    var fillAttr = fill ? ' fill="' + fill + '"' : "";
+    var el = '<' + tag + ' ' + attrStr + mgAttr + fillAttr + '/>';
+    return el + '<g transform="translate(200,0) scale(-1,1)">' + el + '</g>';
+  }
+
   var MUSCLE_COLORS = {verde:"#4ade80", azul:"#38bdf8", amarelo:"#fbbf24", vermelho:"#ff5252"};
-  var MUSCLE_BASE = "#2c2c2c";
+  var MUSCLE_BASE = "#333333";
 
   function muscleDetailMsg(mg, info){
     var nome = MUSCLE_GROUP_LABELS[mg];
@@ -844,70 +851,95 @@
     return nome + ": trabalhado por último " + quando + " · " + info.seriesSemana + " séries nos últimos 7 dias.";
   }
 
+  // Silhueta base comum às duas vistas (cabeça, pescoço, tronco, braços,
+  // pernas em cor neutra) — por cima dela entram as formas coloridas de
+  // cada grupamento muscular específico de cada vista.
+  function baseSilhouette(){
+    return (
+      '<ellipse cx="100" cy="22" rx="15" ry="17" fill="' + MUSCLE_BASE + '"/>' + // cabeça
+      '<rect x="92" y="36" width="16" height="12" rx="3" fill="' + MUSCLE_BASE + '"/>' + // pescoço
+      '<path d="M50,50 C50,42 68,37 100,37 C132,37 150,42 150,50 L146,118 C144,144 129,163 111,171 L111,180 L89,180 L89,171 C71,163 56,144 54,118 Z" fill="' + MUSCLE_BASE + '"/>' + // tronco
+      mirroredShape("rect", {x:27, y:120, width:17, height:53, rx:8.5}, null, MUSCLE_BASE) + // antebraço
+      mirroredShape("ellipse", {cx:35.5, cy:180, rx:9, ry:10}, null, MUSCLE_BASE) + // mão
+      '<rect x="80" y="176" width="40" height="26" rx="12" fill="' + MUSCLE_BASE + '"/>' + // pélvis
+      mirroredShape("ellipse", {cx:91, cy:280, rx:11, ry:9}, null, MUSCLE_BASE) + // joelho
+      mirroredShape("rect", {x:78, y:346, width:26, height:13, rx:6}, null, MUSCLE_BASE) // pé
+    );
+  }
+
+  function renderMuscleFront(c){
+    return '<svg class="muscle-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">' +
+      baseSilhouette() +
+      // trapézio (sliver frontal, junto ao pescoço)
+      mirroredShape("path", {d:"M92,37 L74,50 L88,54 L94,44 Z"}, "costas", c("costas")) +
+      // deltoide anterior
+      mirroredShape("path", {d:"M76,42 C62,41 50,50 48,64 C47,75 53,84 64,87 C70,75 72,58 76,42 Z"}, "ombros", c("ombros")) +
+      // peitoral (forma única cobrindo os dois lados — conecta no esterno)
+      '<path class="mm-shape" data-mg="peito" d="M100,50 C82,48 68,54 63,67 C61,79 65,90 76,96 C86,100 95,97 100,89 C105,97 114,100 124,96 C135,90 139,79 137,67 C132,54 118,48 100,50 Z" fill="' + c("peito") + '"/>' +
+      // bíceps
+      mirroredShape("path", {d:"M50,66 C41,69 37,80 38,94 C39,105 43,114 50,118 C57,114 60,101 59,87 C58,76 55,69 50,66 Z"}, "biceps", c("biceps")) +
+      // abdômen: grade central (reto abdominal) + faixa lateral (oblíquos)
+      mirroredShape("rect", {x:64, y:98, width:13, height:60, rx:6}, "abdomen", c("abdomen")) + // obliquo
+      '<rect class="mm-shape" data-mg="abdomen" x="82" y="97" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
+      '<rect class="mm-shape" data-mg="abdomen" x="103" y="97" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
+      '<rect class="mm-shape" data-mg="abdomen" x="82" y="117" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
+      '<rect class="mm-shape" data-mg="abdomen" x="103" y="117" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
+      '<rect class="mm-shape" data-mg="abdomen" x="82" y="137" width="15" height="18" rx="4" fill="' + c("abdomen") + '"/>' +
+      '<rect class="mm-shape" data-mg="abdomen" x="103" y="137" width="15" height="18" rx="4" fill="' + c("abdomen") + '"/>' +
+      // quadríceps
+      mirroredShape("path", {d:"M96,183 C99,215 98,248 90,277 L74,277 C68,248 66,215 70,183 Z"}, "quadriceps", c("quadriceps")) +
+      // panturrilha (tibial anterior, vista de frente)
+      mirroredShape("path", {d:"M92,285 C94,306 92,327 85,347 L77,347 C72,327 71,306 74,285 Z"}, "panturrilha", c("panturrilha")) +
+    '</svg>';
+  }
+
+  function renderMuscleBack(c){
+    return '<svg class="muscle-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">' +
+      baseSilhouette() +
+      // trapézio (grande, forma de losango — o mais característico de costas)
+      '<path class="mm-shape" data-mg="costas" d="M100,37 L128,54 L112,108 L100,128 L88,108 L72,54 Z" fill="' + c("costas") + '"/>' +
+      // deltoide posterior
+      mirroredShape("path", {d:"M76,42 C62,41 50,50 48,64 C47,75 53,84 64,87 C70,75 72,58 76,42 Z"}, "ombros", c("ombros")) +
+      // latíssimo do dorso
+      mirroredShape("path", {d:"M60,68 C54,88 54,113 64,138 C70,150 80,154 90,149 L90,108 C87,89 78,74 60,68 Z"}, "costas", c("costas")) +
+      // romboides / eretores da espinha (faixa central)
+      '<rect class="mm-shape" data-mg="costas" x="93" y="94" width="14" height="86" rx="6" fill="' + c("costas") + '"/>' +
+      // tríceps
+      mirroredShape("path", {d:"M50,66 C41,69 37,80 38,94 C39,105 43,114 50,118 C57,114 60,101 59,87 C58,76 55,69 50,66 Z"}, "triceps", c("triceps")) +
+      // glúteos
+      mirroredShape("path", {d:"M97,178 C102,190 100,206 89,216 C79,220 68,213 66,199 C65,187 74,178 87,176 Z"}, "gluteos", c("gluteos")) +
+      // isquiotibiais (posterior de coxa)
+      mirroredShape("path", {d:"M95,220 C99,242 97,262 89,278 L74,278 C68,262 66,242 70,220 Z"}, "posterior_coxa", c("posterior_coxa")) +
+      // panturrilha (gastrocnêmio — mais arredondada/saliente do que a vista de frente)
+      mirroredShape("path", {d:"M93,286 C98,301 96,320 87,336 C81,344 71,340 69,323 C67,305 72,291 81,286 Z"}, "panturrilha", c("panturrilha")) +
+    '</svg>';
+  }
+
   function renderMuscleMap(){
     var status = computeMuscleStatus();
     function c(mg){ return MUSCLE_COLORS[status[mg].status]; }
 
-    var svg = '<svg class="muscle-svg" viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg">' +
-      // cabeça e pescoço (base, não é grupamento treinável)
-      '<ellipse cx="110" cy="24" rx="17" ry="19" fill="' + MUSCLE_BASE + '"/>' +
-      '<rect x="100" y="40" width="20" height="12" fill="' + MUSCLE_BASE + '"/>' +
-      // torso base (por trás do peito/abdômen, preenche os contornos)
-      '<rect x="72" y="50" width="76" height="135" rx="28" fill="' + MUSCLE_BASE + '"/>' +
-      // antebraços + mãos (base, não mapeados)
-      '<rect x="36" y="132" width="19" height="58" rx="9" fill="' + MUSCLE_BASE + '"/>' +
-      '<rect x="165" y="132" width="19" height="58" rx="9" fill="' + MUSCLE_BASE + '"/>' +
-      '<ellipse cx="45" cy="195" rx="10" ry="11" fill="' + MUSCLE_BASE + '"/>' +
-      '<ellipse cx="175" cy="195" rx="10" ry="11" fill="' + MUSCLE_BASE + '"/>' +
-      // quadril / pélvis (base)
-      '<rect x="78" y="175" width="64" height="28" rx="13" fill="' + MUSCLE_BASE + '"/>' +
-      // joelhos + pés (base)
-      '<ellipse cx="93" cy="300" rx="12" ry="10" fill="' + MUSCLE_BASE + '"/>' +
-      '<ellipse cx="127" cy="300" rx="12" ry="10" fill="' + MUSCLE_BASE + '"/>' +
-      '<rect x="80" y="368" width="26" height="12" rx="6" fill="' + MUSCLE_BASE + '"/>' +
-      '<rect x="114" y="368" width="26" height="12" rx="6" fill="' + MUSCLE_BASE + '"/>' +
-      // OMBROS
-      '<ellipse class="mm-shape" data-mg="ombros" cx="58" cy="62" rx="19" ry="15" fill="' + c("ombros") + '"/>' +
-      '<ellipse class="mm-shape" data-mg="ombros" cx="162" cy="62" rx="19" ry="15" fill="' + c("ombros") + '"/>' +
-      // PEITO
-      '<rect class="mm-shape" data-mg="peito" x="80" y="58" width="60" height="42" rx="17" fill="' + c("peito") + '"/>' +
-      // BÍCEPS
-      '<rect class="mm-shape" data-mg="biceps" x="38" y="78" width="21" height="52" rx="10" fill="' + c("biceps") + '"/>' +
-      '<rect class="mm-shape" data-mg="biceps" x="161" y="78" width="21" height="52" rx="10" fill="' + c("biceps") + '"/>' +
-      // ABDÔMEN
-      '<rect class="mm-shape" data-mg="abdomen" x="87" y="102" width="46" height="68" rx="13" fill="' + c("abdomen") + '"/>' +
-      // QUADRÍCEPS
-      '<rect class="mm-shape" data-mg="quadriceps" x="76" y="202" width="30" height="92" rx="14" fill="' + c("quadriceps") + '"/>' +
-      '<rect class="mm-shape" data-mg="quadriceps" x="114" y="202" width="30" height="92" rx="14" fill="' + c("quadriceps") + '"/>' +
-      // PANTURRILHA
-      '<rect class="mm-shape" data-mg="panturrilha" x="80" y="310" width="24" height="58" rx="12" fill="' + c("panturrilha") + '"/>' +
-      '<rect class="mm-shape" data-mg="panturrilha" x="116" y="310" width="24" height="58" rx="12" fill="' + c("panturrilha") + '"/>' +
-    '</svg>';
+    var maps = '<div class="muscle-map-wrap">' +
+      '<div class="muscle-view"><span class="muscle-view-label">Frente</span>' + renderMuscleFront(c) + '</div>' +
+      '<div class="muscle-view"><span class="muscle-view-label">Costas</span>' + renderMuscleBack(c) + '</div>' +
+    '</div>';
 
     var legend = '<div class="muscle-legend">' +
       '<span class="li"><span class="dot" style="background:' + MUSCLE_COLORS.verde + '"></span>Recuperado / pronto</span>' +
       '<span class="li"><span class="dot" style="background:' + MUSCLE_COLORS.azul + '"></span>Em recuperação (&lt;48h)</span>' +
       '<span class="li"><span class="dot" style="background:' + MUSCLE_COLORS.amarelo + '"></span>Volume baixo essa semana</span>' +
-      '<span class="li"><span class="dot" style="background:' + MUSCLE_COLORS.vermelho + '"></span>Trabalhado no treino mais recente</span>' +
+      '<span class="li"><span class="dot" style="background:' + MUSCLE_COLORS.vermelho + '"></span>Trabalhado hoje</span>' +
     '</div>';
-
-    var chips = '<div class="muscle-chips">';
-    MUSCLE_GROUPS_BACK.forEach(function(mg){
-      chips += '<span class="muscle-chip" data-mg="' + mg + '"><span class="dot" style="background:' + c(mg) + '"></span>' + MUSCLE_GROUP_LABELS[mg] + '</span>';
-    });
-    chips += '</div>';
 
     return '<div class="panel"><h2>Mapa muscular</h2>' +
       '<p class="sub">Toque num músculo pra ver quando foi trabalhado por último. Atualiza sozinho a cada treino salvo.</p>' +
-      '<div class="muscle-map-wrap">' + svg + legend + '</div>' +
-      chips +
-      '<p class="muscle-map-note">Costas, glúteos e posterior de coxa não aparecem na silhueta de frente — por isso ficam como etiquetas acima.</p>' +
+      maps + legend +
     '</div>';
   }
 
   function wireMuscleMapEvents(el){
     var status = computeMuscleStatus();
-    el.querySelectorAll('.mm-shape, .muscle-chip').forEach(function(node){
+    el.querySelectorAll('.mm-shape').forEach(function(node){
       node.addEventListener("click", function(){
         var mg = node.getAttribute("data-mg");
         showToast(muscleDetailMsg(mg, status[mg]));

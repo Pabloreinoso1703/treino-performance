@@ -108,3 +108,22 @@ Como as 2 legendas da screenshot ficaram cortadas, perguntei o que as 4 cores de
 - Reteste ao vivo depois do deploy da Vercel atualizar.
 - Validar no iPhone real: "Adicionar à Tela de Início" (ícone, tela cheia), aparência do mapa muscular numa tela pequena, e se os steppers de carga/reps são fáceis de tocar com o dedo (foram desenhados pra ~26px, dentro do recomendado, mas vale checar na prática).
 - Ideia registrada mas não implementada: talvez adicionar uma segunda vista (costas) do corpo no mapa muscular no futuro, se Pablo sentir falta de ver costas/glúteos/posterior de coxa desenhados (hoje só aparecem como chip de texto).
+
+## Sessão 3.1 — 13/09/2026 — Mapa muscular v2 (vista de frente + costas, mais realista)
+
+Depois de ver o resultado da v1 (6 "blobs" genéricos só de frente), Pablo mandou 2 imagens de referência (diagramas anatômicos de estoque, frente+costas, com formato de músculo real) e pediu algo mais realista, com o dorso incluído, mostrando "exatamente todos os grupos musculares e não de forma geral".
+
+### O que mudou
+- **Duas vistas lado a lado** (frente + costas), cada uma seu próprio SVG (`renderMuscleFront()` / `renderMuscleBack()`), silhueta compartilhada (`baseSilhouette()`: cabeça, pescoço, tronco, antebraços, mãos, pélvis, joelhos, pés — sempre cor neutra).
+- **10 grupamentos rastreados agora** (`ALL_MUSCLE_GROUPS`), cada um com forma anatômica própria desenhada na silhueta certa (nunca mais como "chip" de texto): ombros (deltoide anterior na frente + posterior nas costas), peitoral, bíceps, **tríceps** (novo — costas do braço), abdômen com grade de 6-pack + oblíquos, costas (trapézio em losango + latíssimo em forma de asa + romboides/eretores da espinha, tudo nas costas), glúteos, quadríceps, posterior de coxa/isquiotibiais, panturrilha (tibial anterior na frente + gastrocnêmio nas costas).
+- `MUSCLE_MAP` ganhou tríceps como grupamento secundário nos exercícios de empurrar (supino reto, supino inclinado, desenvolvimento de ombro).
+- **Pares simétricos desenhados uma vez só**: helper `mirroredShape()` desenha o lado esquerdo e devolve automaticamente uma cópia espelhada do lado direito via `transform="translate(200,0) scale(-1,1)"` do SVG — evita duplicar/errar coordenadas na mão pro lado direito.
+- Formas usam `<path>` com curvas (não só retângulo/elipse simples) pra parecer mais com músculo de verdade: deltoide em gota, peitoral em leque, bíceps/tríceps em fuso, latíssimo em asa, trapézio em losango, glúteo arredondado, etc.
+- **Nota de direitos autorais:** as imagens que o Pablo mandou são fotos de banco de imagens (Dreamstime/Getty, com marca d'água do fotógrafo) — não copiei o desenho específico delas. O estilo (diagrama de linha, anatômico, frente+costas) é um padrão genérico usado em vários apps de treino; o desenho em si (formas, proporções, curvas) é original, feito do zero pra esse projeto.
+- Removidos: os "chips" de texto pra costas/glúteos/posterior de coxa (não fazem mais falta, agora aparecem desenhados na vista de costas).
+
+### Testes
+Reaproveitei `test3.js`, `test4.js` e `test5.js` (ajustando só o que checava os chips removidos) — todos passando, incluindo a checagem de que triceps fica vermelho corretamente quando um exercício de empurrar é registrado, e que glúteos/quadríceps ficam azuis corretamente num cenário de sessão de ontem (`test5.js`, com o stub stateful).
+
+### Pendências no fim da Sessão 3.1
+- Mesmas pendências da Sessão 3 (push, reteste ao vivo, validar no iPhone real) — essa era só um refinamento visual em cima do que já estava pendente.
