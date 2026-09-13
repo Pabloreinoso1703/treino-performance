@@ -127,3 +127,25 @@ Reaproveitei `test3.js`, `test4.js` e `test5.js` (ajustando só o que checava os
 
 ### Pendências no fim da Sessão 3.1
 - Mesmas pendências da Sessão 3 (push, reteste ao vivo, validar no iPhone real) — essa era só um refinamento visual em cima do que já estava pendente.
+
+## Sessão 3.2 — 13/09/2026 — Mapa muscular v3 (estilo prancha anatômica)
+
+Pablo não gostou da v2 ("ainda muito desenho, pouco realista") e pediu pra copiar exatamente as fotos de referência que ele mandou (2 imagens de banco de imagens — Dreamstime/Getty, com marca d'água). **Expliquei que não posso reproduzir essa arte específica** (direitos autorais do ilustrador/banco de imagens) e perguntei o que especificamente ele queria mudar. Respostas: estilo muito "bloco"/pouco realista, proporção do corpo estranha, e queria algo no estilo de desenho de livro de anatomia como nas fotos.
+
+### O que mudou (v3)
+- **Silhueta em tom de pele** (`#e8c9a0`) com **contorno fino marrom-escuro** (`#4a3623`, estilo prancha anatômica gravada) em vez de silhueta escura genérica — mudança de estilo visual completa pra parecer mais com ilustração de anatomia real.
+- **Card claro (`#f3e9db`) atrás de cada figura** — precisava de um fundo claro pra silhueta de pele fazer sentido visualmente (o app continua com tema laranja/preto no resto; só esse painel específico usa fundo claro, como nas referências).
+- **Proporções do corpo recalibradas**: viewBox aumentado de 200×400 pra 240×480, com cabeça/pescoço/tronco/pernas redimensionados pra uma proporção mais realista (~8 cabeças de altura, mais parecido com corpo humano de verdade — a v2 estava com proporção "esquisita"/desproporcional, como o Pablo apontou).
+- **Muito mais subdivisão anatômica** — quase dobrou o número de formas desenhadas: trapézio (frente e costas), serrátil anterior (decorativo, 3 "dedos" na lateral das costelas), peitoral com linha de esterno decorativa, abdômen agora com **8 blocos** (não 6) + oblíquos, quadríceps dividido em **vasto lateral + reto femoral/vasto medial** (2 partes por perna, não 1 bloco só), costas com trapézio em losango + infraespinhal/redondo + latíssimo + romboides + eretores da espinha (5 formas diferentes, não 3), tríceps, glúteos, isquiotibiais divididos em **bíceps femoral + semitendíneo/semimembranáceo** (2 partes por perna), panturrilha com **gastrocnêmio de duas cabeças** (o "duplo bojo" característico) + sóleo.
+- **Bug real pego por teste automatizado:** a linha decorativa do esterno (só visual, sem `data-mg`) estava sobrepondo o peitoral e bloqueando o clique nele — um teste Playwright tentando clicar no peitoral travou porque a `<line>` "roubava" o toque. Corrigido com `pointer-events="none"` na linha.
+- Correção de precisão anatômica: as "fingers" do serrátil anterior tinham sido marcadas como grupo "costas" por engano (geraria uma mensagem confusa tipo "Costas: ..." ao tocar numa forma que visualmente fica na lateral das costelas) — corrigido pra ficarem decorativas/neutras (tom de pele, não clicáveis), já que nenhum exercício do plano isola esse músculo mesmo.
+- Lógica de status (cores por grupamento) **não mudou** — só o desenho ficou mais detalhado/realista por cima da mesma lógica de dados já validada nas sessões anteriores.
+
+### Nota sobre direitos autorais (documentado por transparência)
+O Pablo pediu explicitamente pra copiar as fotos de referência (2 imagens com marca d'água de banco de imagens). Recusei copiar a arte específica e expliquei o motivo (direitos autorais do banco/ilustrador), mas segui em frente com uma versão own-design no mesmo espírito/estilo geral (prancha anatômica, tom de pele, contornos finos, frente+costas) — isso é uma prática padrão/genérica de ilustração médica, não uma cópia da obra específica.
+
+### Testes
+Reaproveitei `test3.js`/`test4.js`/`test5.js` sem mudança de expectativas de lógica (só a contagem informativa de `.mm-shape` mudou pra 47, já que há muito mais formas agora) — todos passando, incluindo o teste que pegou o bug do `pointer-events` na linha do esterno.
+
+### Pendências no fim da Sessão 3.2
+- Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real (esse é o teste mais importante agora — a silhueta em tela pequena e a legibilidade dos contornos finos precisam ser conferidas na prática).

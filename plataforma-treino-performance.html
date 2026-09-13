@@ -247,11 +247,13 @@
 
   /* ---- Mapa muscular (frente + costas lado a lado) ---- */
   .muscle-map-wrap{display:flex;gap:10px;justify-content:center;align-items:flex-start;}
-  .muscle-view{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1 1 0;max-width:170px;}
+  .muscle-view{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1 1 0;max-width:180px;}
   .muscle-view-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;}
-  .muscle-svg{width:100%;height:auto;}
-  .muscle-svg .mm-shape{cursor:pointer;transition:opacity .15s ease;stroke:rgba(0,0,0,0.4);stroke-width:1;}
+  .muscle-svg-card{width:100%;background:#f3e9db;border-radius:14px;padding:6px;}
+  .muscle-svg{width:100%;height:auto;display:block;}
+  .muscle-svg .mm-shape{cursor:pointer;transition:opacity .15s ease;}
   .muscle-svg .mm-shape:active{opacity:0.7;}
+  .muscle-svg .mm-base{pointer-events:none;}
   .muscle-legend{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:12px;}
   .muscle-legend .li{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);}
   .muscle-legend .li .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;}
@@ -833,16 +835,28 @@
   // transform SVG em vez de recalcular coordenadas na mão — assim cada par
   // simétrico de músculo (ombro, braço, perna) só precisa ser desenhado uma
   // vez. O espelho é em torno do eixo x=100 (metade de um viewBox 0 0 200 *).
-  function mirroredShape(tag, attrs, mg, fill){
+  // Espelha uma forma do lado esquerdo do corpo pro lado direito via
+  // transform SVG (eixo em x=120, metade do viewBox 0 0 240 *) — evita
+  // recalcular coordenadas na mão pros pares simétricos (ombro, braço, perna).
+  function mirroredShape(tag, attrs, mg, fill, strokeW){
     var attrStr = Object.keys(attrs).map(function(k){ return k + '="' + attrs[k] + '"'; }).join(" ");
-    var mgAttr = mg ? ' class="mm-shape" data-mg="' + mg + '"' : "";
+    var mgAttr = mg ? ' class="mm-shape" data-mg="' + mg + '"' : ' class="mm-base"';
     var fillAttr = fill ? ' fill="' + fill + '"' : "";
-    var el = '<' + tag + ' ' + attrStr + mgAttr + fillAttr + '/>';
-    return el + '<g transform="translate(200,0) scale(-1,1)">' + el + '</g>';
+    var strokeAttr = ' stroke="' + MUSCLE_STROKE + '" stroke-width="' + (strokeW || 1.4) + '"';
+    var el = '<' + tag + ' ' + attrStr + mgAttr + fillAttr + strokeAttr + '/>';
+    return el + '<g transform="translate(240,0) scale(-1,1)">' + el + '</g>';
+  }
+  function soloShape(tag, attrs, mg, fill, strokeW){
+    var attrStr = Object.keys(attrs).map(function(k){ return k + '="' + attrs[k] + '"'; }).join(" ");
+    var mgAttr = mg ? ' class="mm-shape" data-mg="' + mg + '"' : ' class="mm-base"';
+    var fillAttr = fill ? ' fill="' + fill + '"' : "";
+    var strokeAttr = ' stroke="' + MUSCLE_STROKE + '" stroke-width="' + (strokeW || 1.4) + '"';
+    return '<' + tag + ' ' + attrStr + mgAttr + fillAttr + strokeAttr + '/>';
   }
 
   var MUSCLE_COLORS = {verde:"#4ade80", azul:"#38bdf8", amarelo:"#fbbf24", vermelho:"#ff5252"};
-  var MUSCLE_BASE = "#333333";
+  var MUSCLE_BASE = "#e8c9a0";   // tom de pele — fundo neutro da silhueta
+  var MUSCLE_STROKE = "#4a3623"; // contorno fino marrom-escuro, estilo prancha anatômica
 
   function muscleDetailMsg(mg, info){
     var nome = MUSCLE_GROUP_LABELS[mg];
@@ -851,67 +865,86 @@
     return nome + ": trabalhado por último " + quando + " · " + info.seriesSemana + " séries nos últimos 7 dias.";
   }
 
-  // Silhueta base comum às duas vistas (cabeça, pescoço, tronco, braços,
-  // pernas em cor neutra) — por cima dela entram as formas coloridas de
-  // cada grupamento muscular específico de cada vista.
+  // Silhueta base comum às duas vistas (cabeça, pescoço, tronco, antebraço,
+  // mão, pélvis, joelho, pé em tom de pele neutro) — por cima dela entram as
+  // formas de cada grupamento muscular específico de cada vista.
   function baseSilhouette(){
     return (
-      '<ellipse cx="100" cy="22" rx="15" ry="17" fill="' + MUSCLE_BASE + '"/>' + // cabeça
-      '<rect x="92" y="36" width="16" height="12" rx="3" fill="' + MUSCLE_BASE + '"/>' + // pescoço
-      '<path d="M50,50 C50,42 68,37 100,37 C132,37 150,42 150,50 L146,118 C144,144 129,163 111,171 L111,180 L89,180 L89,171 C71,163 56,144 54,118 Z" fill="' + MUSCLE_BASE + '"/>' + // tronco
-      mirroredShape("rect", {x:27, y:120, width:17, height:53, rx:8.5}, null, MUSCLE_BASE) + // antebraço
-      mirroredShape("ellipse", {cx:35.5, cy:180, rx:9, ry:10}, null, MUSCLE_BASE) + // mão
-      '<rect x="80" y="176" width="40" height="26" rx="12" fill="' + MUSCLE_BASE + '"/>' + // pélvis
-      mirroredShape("ellipse", {cx:91, cy:280, rx:11, ry:9}, null, MUSCLE_BASE) + // joelho
-      mirroredShape("rect", {x:78, y:346, width:26, height:13, rx:6}, null, MUSCLE_BASE) // pé
+      soloShape("ellipse", {cx:120, cy:34, rx:21, ry:25}, null, MUSCLE_BASE) + // cabeça
+      soloShape("path", {d:"M106,74 L110,56 L130,56 L134,74 Z"}, null, MUSCLE_BASE) + // pescoço
+      soloShape("path", {d:"M50,74 C50,62 72,55 120,55 C168,55 190,62 190,74 L182,176 C178,206 158,225 133,231 L133,239 L107,239 L107,231 C82,225 62,206 58,176 Z"}, null, MUSCLE_BASE) + // tronco
+      mirroredShape("path", {d:"M58,184 C54,210 54,236 58,258 L78,258 C80,232 79,206 76,184 Z"}, null, MUSCLE_BASE) + // antebraço
+      mirroredShape("ellipse", {cx:67, cy:268, rx:13, ry:14}, null, MUSCLE_BASE) + // mão
+      soloShape("rect", {x:88, y:228, width:64, height:14, rx:6}, null, MUSCLE_BASE) + // virilha/pélvis (sliver visível entre tronco e coxas)
+      mirroredShape("ellipse", {cx:95, cy:350, rx:15, ry:11}, null, MUSCLE_BASE) + // joelho
+      mirroredShape("rect", {x:78, y:452, width:38, height:16, rx:8}, null, MUSCLE_BASE) // pé
     );
   }
 
   function renderMuscleFront(c){
-    return '<svg class="muscle-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">' +
+    return '<svg class="muscle-svg" viewBox="0 0 240 480" xmlns="http://www.w3.org/2000/svg">' +
       baseSilhouette() +
       // trapézio (sliver frontal, junto ao pescoço)
-      mirroredShape("path", {d:"M92,37 L74,50 L88,54 L94,44 Z"}, "costas", c("costas")) +
+      mirroredShape("path", {d:"M106,60 L80,76 L96,82 L110,66 Z"}, "costas", c("costas")) +
       // deltoide anterior
-      mirroredShape("path", {d:"M76,42 C62,41 50,50 48,64 C47,75 53,84 64,87 C70,75 72,58 76,42 Z"}, "ombros", c("ombros")) +
+      mirroredShape("path", {d:"M96,62 C74,60 55,72 50,92 C47,108 55,124 72,130 C82,112 88,86 96,62 Z"}, "ombros", c("ombros")) +
       // peitoral (forma única cobrindo os dois lados — conecta no esterno)
-      '<path class="mm-shape" data-mg="peito" d="M100,50 C82,48 68,54 63,67 C61,79 65,90 76,96 C86,100 95,97 100,89 C105,97 114,100 124,96 C135,90 139,79 137,67 C132,54 118,48 100,50 Z" fill="' + c("peito") + '"/>' +
-      // bíceps
-      mirroredShape("path", {d:"M50,66 C41,69 37,80 38,94 C39,105 43,114 50,118 C57,114 60,101 59,87 C58,76 55,69 50,66 Z"}, "biceps", c("biceps")) +
-      // abdômen: grade central (reto abdominal) + faixa lateral (oblíquos)
-      mirroredShape("rect", {x:64, y:98, width:13, height:60, rx:6}, "abdomen", c("abdomen")) + // obliquo
-      '<rect class="mm-shape" data-mg="abdomen" x="82" y="97" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
-      '<rect class="mm-shape" data-mg="abdomen" x="103" y="97" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
-      '<rect class="mm-shape" data-mg="abdomen" x="82" y="117" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
-      '<rect class="mm-shape" data-mg="abdomen" x="103" y="117" width="15" height="17" rx="4" fill="' + c("abdomen") + '"/>' +
-      '<rect class="mm-shape" data-mg="abdomen" x="82" y="137" width="15" height="18" rx="4" fill="' + c("abdomen") + '"/>' +
-      '<rect class="mm-shape" data-mg="abdomen" x="103" y="137" width="15" height="18" rx="4" fill="' + c("abdomen") + '"/>' +
-      // quadríceps
-      mirroredShape("path", {d:"M96,183 C99,215 98,248 90,277 L74,277 C68,248 66,215 70,183 Z"}, "quadriceps", c("quadriceps")) +
+      soloShape("path", {d:"M120,68 C92,64 70,74 61,96 C55,114 63,132 82,142 C98,148 112,143 120,128 C128,143 142,148 158,142 C177,132 185,114 179,96 C170,74 148,64 120,68 Z"}, "peito", c("peito")) +
+      // linha do esterno (puramente decorativa, reforça leitura anatômica)
+      '<line x1="120" y1="70" x2="120" y2="126" stroke="' + MUSCLE_STROKE + '" stroke-width="1.2" stroke-dasharray="2,3" pointer-events="none"/>' +
+      // serrátil anterior (3 "dedos" abaixo/lateral ao peitoral) — puramente
+      // decorativo/anatômico, não rastreado (nenhum exercício do plano isola
+      // esse músculo), por isso fica sempre em tom de pele, não clicável.
+      mirroredShape("path", {d:"M72,130 L58,140 L65,148 L76,138 Z"}, null, MUSCLE_BASE, 1) +
+      mirroredShape("path", {d:"M75,146 L60,156 L67,164 L79,154 Z"}, null, MUSCLE_BASE, 1) +
+      mirroredShape("path", {d:"M78,162 L63,172 L70,180 L82,170 Z"}, null, MUSCLE_BASE, 1) +
+      // bíceps braquial
+      mirroredShape("path", {d:"M64,94 C52,100 46,118 47,142 C48,162 54,178 63,185 C72,178 76,158 75,136 C74,116 70,100 64,94 Z"}, "biceps", c("biceps")) +
+      // abdômen: grade de 8 blocos (reto abdominal) + faixa lateral (oblíquos)
+      mirroredShape("path", {d:"M102,150 C92,154 84,170 82,192 C81,208 85,222 94,230 L102,230 L102,150 Z"}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:103, y:150, width:14, height:20, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:123, y:150, width:14, height:20, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:103, y:174, width:14, height:20, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:123, y:174, width:14, height:20, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:103, y:198, width:14, height:18, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:123, y:198, width:14, height:18, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:103, y:220, width:14, height:16, rx:4}, "abdomen", c("abdomen")) +
+      soloShape("rect", {x:123, y:220, width:14, height:16, rx:4}, "abdomen", c("abdomen")) +
+      // quadríceps: vasto lateral (fora) + reto femoral/vasto medial (dentro)
+      mirroredShape("path", {d:"M96,235 C100,265 98,300 90,342 L74,342 C70,300 72,265 80,235 Z"}, "quadriceps", c("quadriceps")) +
+      mirroredShape("path", {d:"M116,236 C119,266 117,302 110,344 L96,344 C92,302 94,266 98,236 Z"}, "quadriceps", c("quadriceps")) +
       // panturrilha (tibial anterior, vista de frente)
-      mirroredShape("path", {d:"M92,285 C94,306 92,327 85,347 L77,347 C72,327 71,306 74,285 Z"}, "panturrilha", c("panturrilha")) +
+      mirroredShape("path", {d:"M108,356 C111,380 109,410 100,444 L86,444 C80,410 82,380 86,356 Z"}, "panturrilha", c("panturrilha")) +
     '</svg>';
   }
 
   function renderMuscleBack(c){
-    return '<svg class="muscle-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">' +
+    return '<svg class="muscle-svg" viewBox="0 0 240 480" xmlns="http://www.w3.org/2000/svg">' +
       baseSilhouette() +
-      // trapézio (grande, forma de losango — o mais característico de costas)
-      '<path class="mm-shape" data-mg="costas" d="M100,37 L128,54 L112,108 L100,128 L88,108 L72,54 Z" fill="' + c("costas") + '"/>' +
+      // trapézio (grande, losango — o mais característico de costas)
+      soloShape("path", {d:"M120,58 L158,80 L136,170 L120,200 L104,170 L82,80 Z"}, "costas", c("costas")) +
       // deltoide posterior
-      mirroredShape("path", {d:"M76,42 C62,41 50,50 48,64 C47,75 53,84 64,87 C70,75 72,58 76,42 Z"}, "ombros", c("ombros")) +
+      mirroredShape("path", {d:"M96,62 C74,60 55,72 50,92 C47,108 55,124 72,130 C82,112 88,86 96,62 Z"}, "ombros", c("ombros")) +
+      // infraespinhal / redondo (pequeno, junto à omoplata)
+      mirroredShape("ellipse", {cx:98, cy:118, rx:14, ry:18}, "costas", c("costas")) +
       // latíssimo do dorso
-      mirroredShape("path", {d:"M60,68 C54,88 54,113 64,138 C70,150 80,154 90,149 L90,108 C87,89 78,74 60,68 Z"}, "costas", c("costas")) +
-      // romboides / eretores da espinha (faixa central)
-      '<rect class="mm-shape" data-mg="costas" x="93" y="94" width="14" height="86" rx="6" fill="' + c("costas") + '"/>' +
-      // tríceps
-      mirroredShape("path", {d:"M50,66 C41,69 37,80 38,94 C39,105 43,114 50,118 C57,114 60,101 59,87 C58,76 55,69 50,66 Z"}, "triceps", c("triceps")) +
+      mirroredShape("path", {d:"M72,132 C62,160 60,196 72,228 C80,244 94,250 106,244 L106,180 C102,156 90,138 72,132 Z"}, "costas", c("costas")) +
+      // romboides (entre as omoplatas)
+      soloShape("path", {d:"M104,120 L120,132 L120,162 L106,155 Z"}, "costas", c("costas")) +
+      // eretores da espinha (2 faixas finas ao longo da coluna)
+      mirroredShape("rect", {x:111, y:165, width:7, height:78, rx:3}, "costas", c("costas")) +
+      // tríceps braquial
+      mirroredShape("path", {d:"M62,96 C51,102 46,120 47,144 C48,164 53,180 62,186 C71,180 75,160 74,138 C73,118 69,102 62,96 Z"}, "triceps", c("triceps")) +
       // glúteos
-      mirroredShape("path", {d:"M97,178 C102,190 100,206 89,216 C79,220 68,213 66,199 C65,187 74,178 87,176 Z"}, "gluteos", c("gluteos")) +
-      // isquiotibiais (posterior de coxa)
-      mirroredShape("path", {d:"M95,220 C99,242 97,262 89,278 L74,278 C68,262 66,242 70,220 Z"}, "posterior_coxa", c("posterior_coxa")) +
-      // panturrilha (gastrocnêmio — mais arredondada/saliente do que a vista de frente)
-      mirroredShape("path", {d:"M93,286 C98,301 96,320 87,336 C81,344 71,340 69,323 C67,305 72,291 81,286 Z"}, "panturrilha", c("panturrilha")) +
+      mirroredShape("path", {d:"M118,232 C124,248 121,266 108,278 C96,283 82,275 79,258 C77,244 88,233 104,230 Z"}, "gluteos", c("gluteos")) +
+      // isquiotibiais: bíceps femoral (fora) + semitendíneo/semimembranáceo (dentro)
+      mirroredShape("path", {d:"M96,284 C100,308 98,330 90,344 L76,344 C72,326 74,306 80,284 Z"}, "posterior_coxa", c("posterior_coxa")) +
+      mirroredShape("path", {d:"M118,285 C121,308 119,330 112,345 L98,345 C95,327 97,307 101,285 Z"}, "posterior_coxa", c("posterior_coxa")) +
+      // gastrocnêmio: cabeça lateral + medial (o "duplo bojo" característico)
+      mirroredShape("ellipse", {cx:88, cy:368, rx:13, ry:22}, "panturrilha", c("panturrilha")) +
+      mirroredShape("ellipse", {cx:108, cy:372, rx:12, ry:24}, "panturrilha", c("panturrilha")) +
+      // sóleo (faixa abaixo do gastrocnêmio)
+      mirroredShape("path", {d:"M92,398 C96,414 94,430 88,444 L80,444 C77,430 79,414 83,398 Z"}, "panturrilha", c("panturrilha")) +
     '</svg>';
   }
 
@@ -920,8 +953,8 @@
     function c(mg){ return MUSCLE_COLORS[status[mg].status]; }
 
     var maps = '<div class="muscle-map-wrap">' +
-      '<div class="muscle-view"><span class="muscle-view-label">Frente</span>' + renderMuscleFront(c) + '</div>' +
-      '<div class="muscle-view"><span class="muscle-view-label">Costas</span>' + renderMuscleBack(c) + '</div>' +
+      '<div class="muscle-view"><span class="muscle-view-label">Frente</span><div class="muscle-svg-card">' + renderMuscleFront(c) + '</div></div>' +
+      '<div class="muscle-view"><span class="muscle-view-label">Costas</span><div class="muscle-svg-card">' + renderMuscleBack(c) + '</div></div>' +
     '</div>';
 
     var legend = '<div class="muscle-legend">' +
