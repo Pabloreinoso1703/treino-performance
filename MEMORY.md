@@ -192,3 +192,25 @@ Diferente da v3 (SVG 100% gerado por código/fórmula), na v5 a forma de cada m�
 
 ### Pendências no fim da Sessão 3.4
 - Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
+
+## Sessão 3.5 — 13/09/2026 — Mapa muscular v6 (foto de frente nova + fix de tom + mesmo tamanho)
+
+Pablo mandou uma foto de frente NOVA (estilo prancha anatômica com linhas bem fechadas, 8-pack visível, sem sombreado difuso — bem mais parecida em estilo com a foto de costas que já estava em uso) pedindo pra trocar a de frente por essa, mantendo a regra de nunca colorir fora da delimitação. Reportou dois bugs da v5: (1) "vi que em algumas partes está um tom de verde escuro" — inconsistência de tom dentro do mesmo grupamento; (2) queria frente e costas do mesmo tamanho no app (a de frente estava aparecendo menor).
+
+### Foto nova → segmentação quase 100% automática
+Ao contrário da foto de frente anterior (sombreada, sem linha fechada entre deltoide/peitoral/bíceps — exigiu corte manual na v5), essa foto nova tem linhas de contorno bem fechadas, no mesmo estilo da foto de costas. Rodei o mesmo pipeline de segmentação (limiar de luminância pra achar as linhas → `scipy.ndimage.label` pra achar regiões conectadas → `cv2.findContours`+`approxPolyDP` pra simplificar) e dessa vez **peitoral, deltoide, bíceps, abdômen (8 blocos) e quadríceps saíram praticamente isolados automaticamente** — só alguns blocos pequenos na fronteira abdômen↔quadríceps (por volta da virilha) precisaram de uma regra manual (atribuir pelo y do centróide: acima de certa altura = abdômen, abaixo = quadríceps) porque caíam nos dois critérios de bounding-box ao mesmo tempo.
+
+### Bug do tom verde escuro — causa e correção
+Cada grupamento pode ter vários `<path>` (ex.: abdômen saiu como ~17 blocos conectados vizinhos, já que cada "quadradinho" do 8-pack é uma região isolada). O contorno de cada `<path>` vem de `approxPolyDP`, que simplifica o polígono em poucos pontos — isso pode fazer dois `<path>` vizinhos (que originalmente só se tocavam numa linha fina) ficarem com uma pequena sobreposição de 1-2px depois de simplificados. Como o preenchimento é translúcido (`fill-opacity:0.78` combinado com `mix-blend-mode:multiply`), onde dois `<path>` da MESMA cor se sobrepõem a cor é aplicada duas vezes, ficando visivelmente mais escura que o resto — exatamente o "tom de verde escuro" que o Pablo viu (provavelmente nos blocos do abdômen ou nas peças da coxa/glúteo, que são os grupamentos com mais `<path>` vizinhos).
+
+**Correção:** antes de extrair o contorno de cada máscara, erodir ela em ~1px (`cv2.erode`, kernel 3×3, 1 iteração). Isso cria uma folguinha mínima entre regiões vizinhas, então os `<path>` simplificados nunca mais se tocam/sobrepõem — cada grupamento fica com um tom 100% uniforme em toda a extensão, ao custo de uma linha finíssima (imperceptível) de "não-colorido" entre pedaços vizinhos, que inclusive ajuda a leitura visual (parece uma linha anatômica de verdade). Apliquei esse fix na extração de AMBAS as fotos (frente nova e costas, re-gerando os contornos de costas também).
+
+### Frente e costas do mesmo tamanho
+A foto de frente antiga (v4/v5) era 788×1024 (proporção larga, braços bem abertos horizontalmente) enquanto a de costas é 478×1024 (bem mais estreita/alta). Isso significa que numa vista lado a lado usando a mesma largura de card, o SVG de frente ficava com bem menos altura proporcional — o corpo aparecia visualmente menor. A foto nova que o Pablo mandou tem proporção 473×1024, quase idêntica à de costas (478×1024) — então bastou trocar a imagem e ajustar o `viewBox` do SVG de frente pra bater com o novo tamanho redimensionado (480×1039, contra 480×1028 da de costas) — as duas passaram a ocupar praticamente a mesma altura visual no app automaticamente, sem precisar de CSS especial ou recorte manual.
+
+### Testes
+`test3.js`/`test4.js`/`test5.js` sem nenhuma mudança de código — só a contagem de `.mm-shape` subiu bastante (pra 73, já que abdômen/quadríceps/panturrilha da frente agora têm muito mais pedaços individuais que antes, todos corretos e testados). Lógica de cor/status validada nas sessões anteriores continua batendo.
+
+### Pendências no fim da Sessão 3.5
+- Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
+- Vale conferir com o Pablo se o resultado atende — pediu revisão detalhada e "não deve haver nenhuma cor pra fora das delimitações"; conferi visualmente com captura de tela (frente e costas, várias cores de status simultâneas) e não achei vazamento, mas o teste definitivo é no aparelho dele.
