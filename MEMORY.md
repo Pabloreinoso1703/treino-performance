@@ -214,3 +214,169 @@ A foto de frente antiga (v4/v5) era 788×1024 (proporção larga, braços bem ab
 ### Pendências no fim da Sessão 3.5
 - Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo, validar visualmente no iPhone real.
 - Vale conferir com o Pablo se o resultado atende — pediu revisão detalhada e "não deve haver nenhuma cor pra fora das delimitações"; conferi visualmente com captura de tela (frente e costas, várias cores de status simultâneas) e não achei vazamento, mas o teste definitivo é no aparelho dele.
+
+## Sessão 3.6 — 15/09/2026 — Tipos de exercício: prancha (peso+tempo) e cardio (duração+velocidade)
+
+Pablo relatou o treino A do dia (esforço moderado-alto, cargas adaptando) e apontou um problema real de modelagem de dados: a prancha abdominal (a5) e a prancha lateral (b5) usavam o mesmo grid genérico "Carga (kg) / Reps" de qualquer exercício de força, mas ele faz prancha com peso corporal (0kg) e mede em **segundos sustentados** (40s hoje), não reps — o campo "Reps" pra isométrico "fica meio ruim". Também rodou 10 min de esteira a ~9km/h depois do treino de força, e o exercício de condicionamento (c1) tinha o mesmo problema: usava séries+carga+reps quando o certo seria duração+velocidade.
+
+### Solução: campo `tipo` por exercício no PLANO
+Adicionei `tipo` a cada item de `PLANO.sessoes[*].exercicios[*]` (função `tipoExercicio(ex)` retorna `ex.tipo || "peso_reps"` — todo exercício de força continua sem precisar declarar nada, é o padrão):
+- `"peso_reps"` (padrão, sem mudança): carga (kg) + reps, como sempre.
+- `"peso_tempo"` — aplicado em `a5` (Prancha abdominal) e `b5` (Prancha lateral): registro vira `{carga, segundos, ok}`. `carga` já nasce em `"0"` (peso corporal) na `iniciarSessao`, e a tabela mostra colunas "Peso extra (kg)" + "Segundos" (stepper de 5 em 5, já que ele mede em segundos redondos tipo 30/35/40). Se ele algum dia fizer prancha com peso extra, só incrementa o campo "Peso extra" normalmente — não tira a opção, só corrige o padrão.
+- `"cardio"` — aplicado em `c1` (esteira/caminhada/corrida): registro vira `{duracaoMin, velocidade, ok}`, sem grade de séries — é uma única linha com "Duração (min)" (step 1) e "Velocidade (km/h)" (step 0.5). O botão "↺ Repetir última série" some pra esse tipo (não faz sentido com série única). O nome do exercício e a `obs` de c1 foram ajustados pra deixar claro que também vale correr (ele fez os 10 min quase todos a 9km/h, não só caminhada/trote leve).
+
+`ultimoRegistroExercicio`, `melhorMarcaExercicio` e `fillNextSetLikeLast` agora recebem o `tipo` e formatam/filtram pelos campos certos por tipo (ex.: "Última vez: 40s (peso corporal)" pra prancha; "Última vez: 10min a 9km/h" pro cardio; "Melhor marca" em segundos pra prancha e omitida pro cardio, já que duração e velocidade têm trade-off entre si e não dá pra resumir num único número "melhor"). `finalizarSessao`/Firestore não precisaram mudar — salvam `sessaoAtual.registros` como está, seja qual for o formato do registro. `computeMuscleStatus` também não precisou mudar: `c1` nunca esteve em `MUSCLE_MAP` (cardio não mapeia pra grupamento muscular), então o mapa muscular continua intocado por esse tipo.
+
+Os inputs/steppers em si (listener genérico de `change` e de `.step-btn`) já eram agnósticos a nome de campo (usam `data-f` dinamicamente) — não precisaram de nenhuma mudança, só a renderização por tipo em `renderTreino()` que gera colunas/labels diferentes.
+
+### Convenção de carga do Pablo (não é bug, é como ele quer registrar)
+Pablo confirmou que sempre digita a carga **total/combinada** de exercícios bilaterais no campo "Carga (kg)" — ex.: agachamento com 18kg de cada lado vira `carga:36`. Isso é só uma convenção de preenchimento dele, não expõe nenhum problema no app (o campo é só um número livre) — registrado aqui pra eu não interpretar mal os valores dele em análises futuras (ex.: ao comentar progressão de carga, "36" no agachamento = 18/lado, não 36/lado).
+
+### Nota de execução do dia (não é mudança de app)
+Ele fez o desenvolvimento de ombro (a4) sentado no banco "pra ter maior controle" — a4 já é genérico ("halteres/máquina", sentado ou em pé), não precisa de campo novo; é uma nota de execução pontual, então sugeri registrar isso no campo livre "Observações" da sessão quando quiser, em vez de mexer no PLANO.
+
+### Testes
+Toda a suíte anterior (`test.js` a `test5.js`, `test-fail.js`) passou sem regressão — inclusive `test.js`, que finaliza uma sessão A e mostrou o novo formato salvo da prancha (`{"carga":"0","segundos":"","ok":false}`). Criei `test6.js` (fluxo completo: prancha com carga padrão 0, stepper de segundos até 40, esconde botão de repetir na prancha não — só no cardio; cardio sem botão de repetir, headers corretos, stepper de duração/velocidade, doc salvo no Firestore com o formato certo pros dois tipos) e `test7.js` (com sessões históricas semeadas via `firebase-stub-stateful.js`, confirma o texto de "Última vez"/"Melhor marca" formatado certo pra prancha e pra cardio). Todos os 8 arquivos de teste passam sem erros de console/página.
+
+### Pendências no fim da Sessão 3.6
+- Mesmas de sempre: Pablo commitar/pushar, reteste ao vivo no navegador/iPhone.
+- Pablo disse que depois vai mandar dados do Apple Watch como base pra atualizar o layout do app e a análise da aba "Análise" — ainda não recebi esses dados; próxima sessão deve tratar disso especificamente (interpretação sempre em conversa com ele, nunca por algoritmo automático, conforme regra 5 do CLAUDE.md).
+
+## Sessão 3.7 — 15/09/2026 — Dados reais do Apple Watch (treino A + corrida) e achado importante sobre ritmo de cardio
+
+Pablo mandou 7 prints do app Fitness/Watch com o resumo detalhado das duas sessões de hoje (força + corrida logo em seguida) e pediu análise profunda à luz da anamnese/objetivos, mudanças no app se fizesse sentido, e que eu contasse tudo o que fizesse.
+
+### Dados extraídos dos prints
+**Treino de Força (12:37–13:24, 46:50 de exercício):** FC média 147bpm (faixa 97-185bpm); zonas — Z1 17:47, Z2 12:11, Z3 10:14, Z4 5:12, Z5 1:24; 457kcal ativas / 535kcal total.
+
+**Corrida (13:24–13:34, 10:00, rotulada "Corrida ao Ar Livre" pelo Watch mas na verdade na esteira — o mapa mostra um ponto fixo, então distância/ritmo vêm do acelerômetro, não de GPS, e por isso têm menos precisão que numa corrida de rua real):** distância 1,30km, ritmo médio 7'40"/km (parcial km1: 7'25"/km a 186bpm; km2 parcial: 8'04"/km a 195bpm), potência média 185W, cadência média 150ppm, passada 0,8m, oscilação vertical 8,3cm, contato com solo 283ms. **FC média 188bpm, pico ~195bpm** (praticamente o máximo estimado por idade pra 25 anos, ~195-197bpm). **Zonas: Z1 0:00, Z2 0:14, Z3 1:11, Z4 0:27, Z5 8:05** — ou seja, 8 dos 10 minutos foram em zona 5 (quase-máxima). Esforço autoavaliado por ele: 7/10 "Difícil". Recuperação pós-corrida foi normal (178→175→160bpm nos ~2min seguintes).
+
+Achado adicional: a FC "pós-exercício" registrada ao final do treino de força (147→159→177→192bpm nos minutos seguintes) na real não é recuperação — é a subida de FC da corrida, que começou imediatamente (0min de descanso entre as duas sessões).
+
+### Análise (à luz dos objetivos 2 e 3 da anamnese)
+O objetivo 3 é justamente entender a resposta de FC ao esforço e buscar adaptação pra FC mais baixa numa mesma intensidade — não perseguir um número por si só — e o objetivo 2 pede base aeróbica de verdade (zona 2), não só "correr mais". O dado de hoje mostra que **9km/h (o ritmo que ele tem usado como "zona 2 conversável") na real colocou ele em zona 4-5 quase o treino inteiro** — isso não é treino de base aeróbica, é treino de alta intensidade por acidente de calibração. Isso é esperado dado o histórico dele (destreinado há ~1,5 ano pra musculação, condicionamento inconsistente, maior corrida contínua já feita foi 6km em ritmo desconhecido) — não é motivo de alarme (sem histórico cardiovascular relatado, RCP normal), mas é um sinal claro de que o ritmo-alvo precisa ser recalibrado pela FC, não pelo km/h. Também pesou o fato de ter emendado a corrida direto após a força sem nenhum intervalo — a força já tinha volume relevante em zona 3-4 (15:26 dos 46:50), então ele começou a corrida com a FC já elevada, o que empurrou o pico ainda mais rápido pra zona 5.
+
+### Mudanças feitas no app
+1. **`c1` (Caminhada/trote/corrida) — texto de orientação recalibrado** com o achado de hoje: en vez de "ritmo que ainda permite conversar", agora instrui explicitamente a deixar a FC guiar (ficar a maior parte do tempo abaixo de ~153bpm, zona 1-2), cita o resultado de 15/09 como referência concreta, e recomenda começar bem mais devagar (caminhada rápida em vez de trote) até a FC confirmar que está na zona certa.
+2. **Aba Análise — formulário de registro do Watch ampliado:** agora tem "Tipo de atividade" (Força / Corrida-Cardio / Outro — necessário porque um mesmo dia pode ter dois registros com FC bem diferentes, como hoje), "Ritmo médio" (texto livre) e "Minutos em zona alta (Z4+Z5)" — esse último é o proxy mais direto do objetivo 3 (quanto do esforço foi quase-máximo), mais informativo que só a FC média isolada. O histórico de registros na aba agora mostra tipo, ritmo e minutos em zona alta.
+3. **Aba Progresso — dois gráficos novos:** "FC média · Corrida/Cardio" e "Minutos em zona alta (Z4+Z5) · Corrida/Cardio", ambos filtrando só os registros com `tipoAtividade:"cardio"`, com a meta explícita de cada linha (a ideia é ela CAIR com o tempo pro mesmo esforço/ritmo — sinal de adaptação cardiovascular real, não só "correu mais rápido").
+4. Como sempre (regra 5), o app só mostra os números — a interpretação de cada treino específico continua sendo feita comigo, em conversa, não por um algoritmo dentro do HTML.
+
+Não escrevi os dois registros de hoje (força + corrida) direto no Firestore dele — não tenho acesso ao banco de produção a partir daqui, só aos stubs de teste. Passei os números prontos pra ele digitar na aba Análise assim que salvar as mudanças.
+
+### Testes
+Bug encontrado e corrigido durante o desenvolvimento: o placeholder do novo campo "Ritmo médio" tinha um apóstrofo dentro de uma string JS de aspas simples (`'Ex: 7'40"/km'`), quebrando a sintaxe (`Unexpected number`) e derrubando o app inteiro — pego rodando um script de debug isolado que checava `appDisplay` depois do login (estava `none`, ou seja, nunca desbloqueava) e visto no `pageerror`. Corrigido trocando pra "Ex: 7min40s/km" (sem aspas simples). Isso reforça rodar pelo menos um teste completo (login → navegação) depois de qualquer edição de string com aspas mistas.
+
+Criei `test8.js` (campos novos do formulário de Análise presentes, salvamento no Firestore com os valores reais de hoje, texto do `c1` atualizado) e `test9.js` (com `firebase-stub-stateful.js` e 3 registros de watch semeados — força de hoje, corrida de hoje, corrida de uma semana atrás — confirma o histórico da aba Análise mostrando tipo/ritmo/zona alta corretamente e os dois gráficos novos em Progresso desenhando path de verdade). Toda a suíte (`test.js` a `test9.js`, 10 arquivos) passa sem erro de console/página.
+
+### Pendências no fim da Sessão 3.7
+- Pablo precisa registrar os dois treinos de hoje na aba Análise (força: 47min, FC méd 147, FC máx 185, 535kcal, RPE 6; corrida: tipo Cardio, 10min, 1,30km, ritmo 7min40s/km, FC méd 188, FC máx 195, ~8,5min em zona alta, 134kcal, RPE 7) pra esses gráficos começarem a valer no banco de produção dele.
+- Combinar com ele se aceita a recalibração de ritmo do `c1` (FC-guiada, começar mais devagar) ou se prefere manter o ritmo por enquanto e só monitorar.
+- Mesmas de sempre: commitar/pushar, reteste ao vivo, validar no iPhone real.
+
+## Sessão 3.8 — 15/09/2026 — Calorias ativas x totais, prints do Watch como pedido padrão, e auditoria dos vídeos de execução
+
+Três pedidos rápidos do Pablo depois da Sessão 3.7:
+
+### 1) Calorias ativas ou totais?
+Ele registrou "ativas" (457kcal do treino de força) e perguntou se devia ser "totais" (535kcal). Resposta: **ativas está certo, não precisa mudar**. "Total de calorias" inclui o metabolismo basal (o que o corpo já gastaria só existindo naquele intervalo de tempo) — isso escala mais com a DURAÇÃO da sessão do que com o esforço em si, o que distorceria comparação entre sessões (ex.: cardio mais longo pareceria "gastar mais" só por ser mais longo, não por ser mais intenso). "Calorias ativas" isola o gasto específico do exercício, que é o número certo pra acompanhar esforço/composição corporal (objetivo 1) de forma comparável treino a treino. Só troquei o rótulo do campo no formulário de "Calorias" pra **"Calorias ativas (kcal)"**, pra não ficar ambíguo de novo no futuro (o campo em si/dado salvo não mudou).
+
+### 2) Prints do Watch sem instrução = pedido padrão de análise
+Pablo pediu que, se no futuro ele mandar só os prints/export do Apple Watch sem escrever mais nada, eu já entenda como pedido pra analisar e atualizar a análise do app sozinho, sem ele precisar pedir de novo toda vez. Registrado como regra 5 do CLAUDE.md (combinado em 15/09/2026): print(s) do Watch sozinho(s) = analisar à luz dos objetivos da anamnese, devolver os valores prontos pra ele digitar na aba Análise (nunca escrevo direto no Firestore de produção — sem acesso a partir daqui) e ajustar o que fizer sentido no app/plano, sempre avisando tudo o que foi feito — igual ao fluxo da Sessão 3.7.
+
+### 3) Auditoria de todos os vídeos de execução
+Pablo relatou que alguns vídeos só abriam direto no YouTube em vez de tocar dentro do app. Causa: o dono do vídeo pode desativar "reprodução em outros sites" — isso não aparece olhando o vídeo no YouTube normalmente, só quando alguém tenta de fato embutir em `<iframe>` de outro domínio (é exatamente o que acontece no nosso modal). Sem acesso de rede real do lado do app pra testar isso automaticamente com Playwright (o `youtube.com` é bloqueado nos testes de propósito, pra não depender de internet), usei a API pública `oEmbed` do YouTube (`GET youtube.com/oembed?url=...&format=json`) pra checar cada um dos 10 vídeos do mapa `VIDEOS`: responde 200+JSON se o embed é permitido, 401/403 se não é.
+
+**Resultado da checagem:**
+- OK (embed permitido): `a1`, `a3`, `a4`, `a5`, `b1`, `b2`, `b3`, `b5`.
+- **Bloqueados (401/403) → substituídos:**
+  - `a2` (Remada curvada): era `r2BIpnqmoJA` (short do canal Bioritmo, embed desativado) → trocado por `SGP8UDHmBWY` ("Como fazer remada curvada do jeito certo para definir costas e braço?", canal Mari Eiras, confirmado embeddable).
+  - `b4` (Elevação lateral): era `xJLldOWxkxA` → trocado por `NOuC7mAOt-A` ("Como fazer ELEVAÇÃO LATERAL", canal Biotreino, confirmado embeddable).
+
+Regra nova no CLAUDE.md (regra 10, atualizada): todo ID novo que entrar em `VIDEOS` daqui pra frente — adição ou substituição — precisa passar pela checagem do oEmbed ANTES de entrar no mapa, exatamente pra não repetir esse problema.
+
+### Testes
+Suíte completa (`test.js` a `test9.js`) rodada de novo depois da troca dos vídeos e do rótulo de calorias — sem regressão (a troca de ID de vídeo não muda nenhuma estrutura testada, só o valor da string; o teste2.js que abre o modal de vídeo do `a1` continua passando porque `a1` não foi alterado).
+
+### Pendências no fim da Sessão 3.8
+- Mesmas de sempre: commitar/pushar, reteste ao vivo — dessa vez vale a pena o Pablo abrir o vídeo de `a2` e `b4` de propósito no app pra confirmar visualmente que tocam embutidos agora.
+
+## Sessão 3.9 — 15/09/2026 — Convenção de carga invertida, categorias de atividade do Watch, e melhorias de UX/produto
+
+Três pedidos do Pablo, comentando o supino de hoje (halteres de 12kg de cada lado):
+
+### 1) Convenção de carga: agora é peso de UM lado, não mais o total
+Ele reverteu a convenção registrada na Sessão 3.6: antes digitava a carga TOTAL somando os dois lados (18kg de cada lado = `36`); agora prefere digitar o peso de **um lado só** (halteres de 12kg = `12`), em qualquer exercício bilateral com halter/barra — fica mais fácil de preencher sem precisar somar antes. Só vale pra halter/barra com peso simétrico nos dois lados; em máquina/aparelho com pilha única, continua sendo o peso total do aparelho (não tem "por lado" ali). Mudanças:
+- CLAUDE.md regra 16 atualizada (a regra antiga fica riscada/marcada como revertida, pra não se perder o histórico de por que existia).
+- `renderTreino()` agora mostra uma nota fixa no topo de toda sessão de força (`sessaoAtual.key !== "COND"`) lembrando da convenção, direto no app — assim não depende só de eu lembrar entre sessões.
+- **Atenção pra próximas análises de progressão:** dados de sessões ANTES de 15/09/2026 podem estar na convenção antiga (total combinado); checar a data antes de comparar cargas de exercícios bilaterais entre períodos diferentes.
+
+### 2) Novas categorias de atividade no registro do Apple Watch
+Pablo pediu 5 categorias específicas: Treino tradicional de força, Caminhada ao ar livre, Corrida interna (esteira), Caminhada interna (esteira), Tênis. Troquei o `TIPOS_ATIVIDADE` genérico (Força/Corrida-Cardio/Outro) por essas 5 + "Outro" como catch-all. Os dois gráficos de Progresso (FC média e minutos em zona alta) agora filtram por uma lista separada `TIPOS_ENDURANCE` (caminhada_externa + corrida_esteira + caminhada_esteira) em vez de checar só `tipoAtividade === "cardio"` — força fica de fora (não é sobre FC contínua) e tênis também (esforço intermitente, FC média não comparável a ritmo de corrida/caminhada contínua; pode ganhar gráfico próprio no futuro se fizer sentido, não pedido agora). Renomeei os títulos dos gráficos de "Corrida/Cardio" pra "Cardio (corrida/caminhada)" pra refletir isso.
+
+### 3) Calorias ativas vs totais — já respondido na Sessão 3.8, sem repetir aqui.
+
+### 4) Pesquisa e melhorias de UX/produto
+Pablo pediu pra pesquisar apps de fitness de referência e ver o que dava pra melhorar visualmente/na praticidade, "no formato de um app de celular". Pesquisei (WebSearch/WebFetch) sobre Hevy/Strong/Fitbod (apps de log de treino bem avaliados) e sobre o design do dashboard do WHOOP (referência conhecida por lidar bem com dado denso de forma simples). Achados que embasaram as mudanças:
+- **WHOOP:** hierarquia por tamanho/cor (número principal grande, cores usadas de forma consistente e restrita — verde/vermelho/amarelo sempre significam a mesma coisa), fundo escuro funcional (não só estético — reduz ruído visual e cansaço ocular em ambiente de academia), "coaching" embutido no próprio dado em vez de separado, divulgação progressiva (tela principal responde uma pergunta central, detalhe fica pra quem quiser aprofundar).
+- **Hevy:** timer de descanso automático, detecção automática de recorde pessoal (PR) durante o treino, notas por exercício, histórico/gráfico por exercício.
+
+**O que já implementei agora (baixo risco, alto valor, sem dependência nova):**
+1. **Barra de progresso da sessão** — "X/Y séries concluídas" com barra visual no topo de toda sessão de treino, atualizada ao vivo a cada "OK" marcado (sem re-renderizar a tela, pra não perder o foco de quem está digitando).
+2. **Badge de recorde ao vivo** — quando uma série marcada "OK" bate a melhor marca histórica daquele exercício (carga pra peso_reps, segundos pra prancha/peso_tempo), aparece "🏆 Novo recorde!" ao lado do nome do exercício, na hora — desaparece se desmarcar a série. Cardio fica de fora (não tem "recorde" único ali, mesmo motivo já documentado na Sessão 3.7).
+3. **Cartão "Essa semana" no Dashboard** — resumo dos últimos 7 dias (sessões de treino, minutos de cardio, RPE médio) num cartão só, no topo do Dashboard, pra leitura rápida sem ter que ficar somando entre as abas Histórico/Análise.
+
+**O que NÃO implementei agora, fica como sugestão pro Pablo decidir (mudanças mais subjetivas/estruturais, não são "óbvias" o suficiente pra eu decidir sozinho):**
+- Timer de descanso iniciar automaticamente ao marcar uma série como OK (hoje é manual, toque em 60/90/120s) — o Hevy faz isso, mas muda um comportamento já existente, então preferi perguntar antes de mudar.
+- Atalho pra já abrir a aba Análise com o tipo de atividade pré-selecionado assim que finalizar um treino na aba Treino, reduzindo retrabalho de digitar duas vezes.
+- Indicador tipo "calendário de consistência" (heatmap de dias treinados no mês, estilo GitHub/Strava) na aba Progresso ou Histórico.
+- Anéis de atividade estilo Apple Fitness (força/cardio/mobilidade) como visual alternativo aos números do Dashboard.
+
+### Testes
+Suíte completa (`test.js` a `test9.js`) sem regressão. Criei `test10.js`: confirma o resumo da semana no Dashboard com dados semeados, a barra de progresso incrementando corretamente ao marcar séries, o badge de PR aparecendo só quando a carga bate o recorde histórico (testei com 15kg — não aparece — e depois 22kg contra um recorde de 20kg — aparece), e o badge sumindo de novo ao desmarcar a série que tinha batido o recorde. Confirmei visualmente (screenshot) que a barra, o badge e o cartão semanal ficaram consistentes com o resto do visual do app (mesmas cores/paineis).
+
+### Pendências no fim da Sessão 3.9
+- Perguntar ao Pablo se quer algum dos itens da lista de sugestões não implementadas (timer automático, atalho Treino→Análise, calendário de consistência, anéis de atividade).
+- Mesmas de sempre: commitar/pushar, reteste ao vivo.
+
+## Sessão 3.10 — 15/09/2026 — As 4 sugestões de UX da Sessão 3.9, todas incorporadas
+
+Pablo respondeu à lista de sugestões não implementadas da Sessão 3.9 com um "sim" geral: "Todas as ideias são boas. Incorpore-as, com base nossos objetivos e metas." Implementei as 4, todas fundamentadas nos objetivos da anamnese (composição corporal, condicionamento com transferência pro tênis, eficiência cardiovascular):
+
+### 1) Timer de descanso automático
+Ao marcar uma série como "OK" em `renderTreino()`, o timer de descanso já começa sozinho — não precisa mais tocar manual em 60/90/120s. Duração por tipo de exercício: **90s** pra `peso_reps` (força tradicional), **60s** pra `peso_tempo` (isométricos como prancha), **nenhum** pra `cardio` (série única contínua, não existe "descanso entre séries" ali). Padrão vindo do Hevy, que dispara o timer automaticamente ao concluir a série.
+
+### 2) Atalho Treino → Análise com pré-preenchimento
+Ao finalizar uma sessão (`finalizarSessao()`), o app agora leva direto pra aba Análise (antes ia pro Dashboard) — reduz o retrabalho de já saber que precisa registrar os dados do Watch daquela sessão. O formulário chega parcialmente preenchido: tipo de atividade (Força pra sessões A/B, Corrida interna/esteira pra Condicionamento) e duração estimada (pro Condicionamento, usa a duração que a pessoa já digitou no próprio exercício de esteira; pra força, usa o tempo decorrido desde o início da sessão). Uma notinha visual avisa que os campos foram pré-preenchidos e pra conferir/ajustar com os dados reais do relógio. Continua sendo só um atalho de digitação — a regra de nunca escrever direto no Firestore de produção a partir daqui, nem interpretar automaticamente os dados, continua valendo (regras 1 e 5).
+
+### 3) Heatmap de consistência
+Novo painel "Consistência" no topo da aba Progresso: grade de 84 dias (12 semanas), estilo GitHub/Strava, mostrando quais dias tiveram algum registro (treino ou Apple Watch) e quantos. É contagem objetiva de presença, não julgamento de qualidade da sessão — dá uma visão rápida de regularidade, que é a variável que mais separa progresso real de progresso zero (mais importante que qualquer sessão isolada).
+
+### 4) Anéis de atividade estilo Apple Fitness
+No cartão "Essa semana" do Dashboard, os números soltos de sessões/cardio da Sessão 3.9 viraram três anéis concêntricos (visual tipo Apple Watch), cada um com meta:
+- **Força** — sessões de força nos últimos 7 dias, meta 3 (base: o próprio Pablo disse conseguir manter 2-3 sessões/semana).
+- **Cardio** — minutos de corrida/caminhada (`TIPOS_ENDURANCE`) na semana, meta 150 (base: diretriz geral OMS/ACSM de atividade aeróbica moderada — deixei explícito na UI que é referência populacional, não meta pessoal dele).
+- **Tênis** — sessões de tênis na semana, meta 1 (sem base em nada que ele declarou — rotulado na UI como referência solta, "não é meta fixa", pra não passar como se fosse pedido ou evidência dele).
+
+**Troquei o 3º anel de "mobilidade" (ideia original da Sessão 3.9) pra "Tênis"**: mobilidade não tem nenhum dado rastreado em lugar nenhum do app, então o anel ficaria sempre vazio; Tênis já tem dado real (categoria `tenis` adicionada na Sessão 3.9) e conecta direto com o objetivo 2 (condicionamento com transferência pro tênis).
+
+### Testes
+Criei `test11.js` com `firebase-stub-stateful.js` e um seed novo (2 sessões de força dentro da semana + 1 fora, 2 registros de Watch — corrida e tênis) pra validar as 4 features juntas: legenda dos anéis batendo com os valores esperados (Força 2/3, Cardio 20/150, Tênis 1/1), 6 círculos SVG (3 anéis × fundo+progresso), heatmap com 84 células e o número certo de dias preenchidos, timer de descanso mostrando ~01:30 depois de marcar série de força e ~01:00 depois de prancha, e a aba ativa virando "analise" com tipo/duração pré-preenchidos depois de finalizar. Toda a suíte (`test.js` a `test11.js`, 11 arquivos) passa sem PAGEERROR/erro de console relevante/diálogo bloqueante.
+
+### Pendências no fim da Sessão 3.10
+- Mesmas de sempre: commitar/pushar (aguardando confirmação do Pablo na sessão, regra 7), reteste ao vivo, validar no iPhone real.
+- Confirmar com o Pablo se ele registrou os pontos de dados históricos do Watch pendentes de sessões anteriores.
+
+## Sessão 3.11 — 15/09/2026 — App desatualizado no celular
+
+Pablo reportou que o app não estava atualizado no celular depois da Sessão 3.10. Investigação: o app não é um PWA instalado de verdade — não tem `manifest.json` nem service worker, só os metatags `apple-mobile-web-app-*` que permitem "Adicionar à Tela de Início" no iOS (um atalho em tela cheia, sem cache offline próprio controlado pelo app). Então a causa é uma destas duas (não dá pra saber qual sem acesso ao celular/painel da Vercel dele a partir daqui):
+1. O deploy ainda não tinha sido feito/terminado (push no GitHub + build na Vercel).
+2. Cache do navegador ou do atalho de tela de início do iOS segurando a versão antiga — o `vercel.json` não tinha nenhum header de cache configurado, então o comportamento padrão de cache (navegador e/ou CDN) podia estar servindo uma cópia antiga em vez de sempre buscar a mais nova.
+
+**O que fiz:** adicionei ao `vercel.json` um header `Cache-Control: no-cache, must-revalidate` pra todas as rotas — isso força o navegador a sempre revalidar com o servidor antes de reusar uma cópia local, reduzindo (mas não eliminando 100%, por causa do jeito que o iOS às vezes trata atalhos de tela de início) o risco de ver versão desatualizada no futuro. Registrado como regra 19 do CLAUDE.md.
+
+**O que pedi pro Pablo confirmar/fazer** (não dá pra verificar remotamente sem acesso ao celular ou ao painel da Vercel dele): (1) confirmar que o push+deploy da Sessão 3.10 realmente terminou; (2) abrir a URL direto no Safari (não pelo atalho da tela de início) pra confirmar que a versão nova carrega; (3) se already carregando a versão nova no Safari mas o atalho da tela de início continuar velho, remover o atalho e adicionar de novo.
+
+### Pendências no fim da Sessão 3.11
+- Aguardar confirmação do Pablo se o passo a passo resolveu, ou se o deploy nem tinha terminado ainda.
+- Mesmas de sempre: commitar/pushar o `vercel.json`, reteste ao vivo, validar no iPhone real.
