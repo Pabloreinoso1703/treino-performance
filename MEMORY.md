@@ -454,3 +454,31 @@ Suíte completa (`test.js` a `test12.js`) sem regressão — nenhum teste checa 
 ### Pendências no fim da Sessão 3.14
 - Pablo revisa visualmente e confirma se o impacto ficou do jeito que ele queria.
 - Mesmas de sempre: commitar/pushar (confirmar que o push realmente aconteceu), reteste ao vivo, validar no iPhone real.
+
+## Sessão 3.15 — 15/09/2026 — Revert do teal, bug de fuso-horário no Bloco 0, auditoria do mapa muscular
+
+Pablo mandou três pedidos juntos: (1) reverter a cor teal da Sessão 3.14 ("Preferi o jeito que tava: sem essa cor nova. Volte a como era antes."), (2) corrigir os dias da semana errados/não-atualizados no Bloco 0 do Dashboard, e (3) revisar profundamente se o treino de hoje condiz com o mapa muscular de hoje.
+
+### 1. Revert do teal
+Removido tudo que a Sessão 3.14 introduziu, mantendo intacta a reorganização de papéis por cor da Sessão 3.13 (que ele não pediu pra desfazer — só reclamou especificamente da "cor nova"): variáveis `--teal-accent`/`--on-teal`, a classe `body.mode-dados` e seu toggle em `setTab()` (junto com a lista `TABS_DADOS`), a regra de aba ativa em teal, os títulos `<h2>` em teal nas 4 abas de dados, e as 5 cores pontuais que tinham virado teal (heatmap, seta dos `<details>`, borda de `.goal-item`, números/bolinhas do "Resumo do mês", `.btn-teal`) — todas voltaram ao valor de laranja/`--muted` que tinham na 3.13. Documentado na regra 11 do CLAUDE.md como uma sub-seção só de histórico (introduzida e revertida no mesmo dia), pra não repetir a mesma sugestão de cor sem necessidade no futuro.
+
+### 2. Bug de fuso-horário no Bloco 0 (semana em tiras)
+Auditei todo o uso de `new Date(`/`.toISOString()`/`.getDay()`/`.getDate()`/`getTimezoneOffset` no arquivo (22 ocorrências) pra achar a causa raiz. O problema: `new Date("YYYY-MM-DD")` sempre interpreta a string como **meia-noite UTC** — em fuso negativo como o do Pablo (Brasil, UTC-3), essa meia-noite UTC corresponde a 21h do dia ANTERIOR no relógio local. `renderWeekStrip()` construía a data assim e depois lia `.getDay()`/`.getDate()` (getters LOCAIS) diretamente nela pra desenhar cada dia da tira — resultado: o dia da semana e o número do dia apareciam sempre um dia atrasado, embora a marcação de "treinado"/"hoje" (que usa o `iso` recalculado) continuasse batendo por coincidência do jeito como a subtração de dias interage com a conversão de fuso.
+
+**Corrigido** com duas funções novas perto do `todayISO()`:
+- `parseISOToLocalDate(iso)` — usa o construtor `new Date(ano, mês-1, dia)` (sempre local, sem ambiguidade de fuso), em vez de fazer parse da string.
+- `fmtLocalISO(d)` — remonta a string ISO manualmente com `getFullYear()`/`getMonth()`/`getDate()`, nunca `.toISOString()` (que reintroduziria o mesmo problema na direção contrária).
+
+`renderWeekStrip()` foi reescrita pra usar esse par em vez de `new Date(todaysISO)` + `.toISOString()`. Agora a tira de dias sempre reflete o dia real, se atualiza sozinha (não depende de nenhum estado salvo) e fica correta em qualquer fuso-horário.
+
+**Auditoria das outras funções que usam `new Date(isoString)`:** `calcStreak()`, `computeMuscleStatus()`, `renderActivityRings()`, `renderResumoSemana()`, `renderConsistencyHeatmap()` e `buildWrappedCards()` foram todas revisadas linha a linha — nenhuma extrai campo de calendário local de uma data UTC-parseada, só fazem aritmética de diferença (`dataA - dataB`) ou comparação (`dataA >= dataB`) entre datas construídas do mesmo jeito, o que cancela o deslocamento de fuso nos dois lados. **Nenhuma delas tinha o bug** — só `renderWeekStrip()` precisou de correção. Documentado como regra nova (20) no CLAUDE.md pra evitar reintroduzir esse padrão em código futuro.
+
+### 3. Auditoria "treino de hoje condiz com o mapa muscular de hoje"
+`computeMuscleStatus()` calcula "vermelho = treinado hoje" via `diasDesde === 0`, onde `diasDesde = Math.round((today - new Date(lastDate)) / 86400000)` — exatamente o padrão de aritmética pura confirmado seguro acima, então o mapa muscular em si nunca esteve errado. A causa mais provável da sensação de "não condiz" relatada pelo Pablo é justamente o bug do item 2: como o Bloco 0 (semana em tiras) e o mapa muscular aparecem um logo abaixo do outro na mesma tela do Dashboard, a tira mostrando o dia da semana errado dava a impressão de que "hoje" não batia entre os dois blocos — quando na verdade só a tira estava com o rótulo errado, e o mapa muscular sempre esteve correto. Também conferi o `MUSCLE_MAP` (associação exercício → grupamento) contra o `PLANO` atual (sessões A/B) e não achei nenhuma divergência.
+
+**Teste de regressão (`test13.js`):** roda a página inteira com o relógio emulado em `America/Sao_Paulo` (`browser.newContext({timezoneId:'America/Sao_Paulo'})`) — necessário porque o container onde os testes rodam usa UTC, e o bug só aparecia em fusos negativos. Semeia um treino de hoje (quadríceps/glúteos via `a3`) e um de 2 dias atrás, e confere: (a) as 7 células da tira batem exatamente com o dia da semana/número/estado "hoje"/"treinado" esperados, calculados de forma independente via aritmética de calendário pura (`Date.UTC`, que não depende do fuso do processo Node); (b) o SVG do mapa muscular pinta quadríceps de vermelho (`#ff5252`) e o toast ao tocar mostra "trabalhado por último hoje", confirmando que os dois blocos concordam sobre o que é "hoje". Passou sem erros. Rodei também a suíte completa `test.js`–`test12.js` de novo — todos passaram sem regressão (o container roda em UTC, então o bug antigo nunca aparecia nesses testes; só o `test13.js` novo, com fuso forçado, conseguia expor e confirmar o fix).
+
+### Pendências no fim da Sessão 3.15
+- Entregar os arquivos atualizados (`index.html`, `plataforma-treino-performance.html`, `CLAUDE.md`, `MEMORY.md`, `test13.js`) pro Pablo.
+- Perguntar de novo (não assumir autorização de sessões anteriores) se ele quer que eu rode `git add`/`git commit` direto no computador dele, e nunca rodar `git push` (sem credenciais no sandbox) — sempre devolver o comando pra ele rodar.
+- Pablo confirma no celular/navegador que o Bloco 0 agora mostra os dias certos e que o mapa muscular condiz com o treino de hoje.
