@@ -19,15 +19,28 @@
     --border:#333333;
     --text:#f2f2f2;
     --muted:#9c9c9c;
+    /* Laranja = SÓ ação/identidade (botões, aba ativa, números neutros) —
+       nunca usado em gráfico/dado, pra continuar raro e chamativo onde
+       importa (reorganização de papéis da Sessão 3.13, ver CLAUDE.md). */
     --accent:#ff7a29;
     --accent2:#ffa94d;
     --on-accent:#1a0f05;
-    --warn:#ffcc66;
-    --danger:#ff5252;
     --radius:14px;
+    /* Verde/amarelo/vermelho = ÚNICO vocabulário de status (na meta/perto/
+       longe, erro/ok) em qualquer lugar do app — mesmo padrão em toda tela
+       (princípio WHOOP, ver pesquisa da Sessão 3.12). */
     --state-good:#4ade80;
     --state-mid:#fbbf24;
     --state-bad:#ff5252;
+    --danger:var(--state-bad); /* alias: erro de formulário/toast é, semanticamente, "estado ruim" */
+    /* Paleta própria pros gráficos de dados (Progresso) — tons frios,
+       deliberadamente fora da família laranja/estado, pra nunca competir
+       visualmente com os botões nem ser confundida com bom/médio/ruim. */
+    --data-1:#38bdf8;
+    --data-2:#22d3ee;
+    --data-3:#a78bfa;
+    --data-4:#fb7185;
+    --data-5:#c084fc;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -190,8 +203,8 @@
   .hist-item .row b{color:var(--text);}
   .hist-item .row span{color:var(--muted);font-size:0.78rem;}
   .badge{display:inline-block;background:rgba(255,169,77,0.16);color:var(--accent2);border-radius:6px;padding:2px 8px;font-size:0.68rem;margin-right:6px;}
-  .badge.warn{background:rgba(255,184,79,0.15);color:var(--warn);}
-  .badge.pr{background:rgba(74,222,128,0.16);color:#4ade80;}
+  .badge.warn{background:rgba(251,191,36,0.15);color:var(--state-mid);}
+  .badge.pr{background:rgba(74,222,128,0.16);color:var(--state-good);}
   .progress-track{background:var(--panel2);border-radius:99px;height:8px;overflow:hidden;margin:10px 0 4px;}
   .progress-fill{background:var(--accent);height:100%;border-radius:99px;transition:width .25s ease;}
   .progress-label{font-size:0.78rem;color:var(--muted);}
@@ -1805,7 +1818,7 @@
     // Peso corporal
     var pesos = state.body.slice().reverse().filter(function(b){ return b.peso; })
       .map(function(b){ return {v: parseFloat(b.peso), data: b.data}; });
-    html += '<div class="panel"><h2>Peso corporal</h2>' + sparkline(pesos, "#ff7a29") +
+    html += '<div class="panel"><h2>Peso corporal</h2>' + sparkline(pesos, "var(--data-1)") +
       (pesos.length ? '<p class="note">Último: ' + pesos[pesos.length-1].v + 'kg em ' + fmtDateBR(pesos[pesos.length-1].data) + '</p>' : '') + '</div>';
 
     // Carga por exercício principal (supino como referência do bloco 0)
@@ -1818,12 +1831,12 @@
         }
       });
     });
-    html += '<div class="panel"><h2>Carga · Supino (reto/inclinado)</h2>' + sparkline(cargasSupino, "#ffa94d") + '</div>';
+    html += '<div class="panel"><h2>Carga · Supino (reto/inclinado)</h2>' + sparkline(cargasSupino, "var(--data-2)") + '</div>';
 
     // RPE ao longo do tempo
     var rpes = state.sessions.slice().reverse().filter(function(s){ return s.rpeGeral; })
       .map(function(s){ return {v: parseFloat(s.rpeGeral), data: s.data}; });
-    html += '<div class="panel"><h2>RPE por sessão</h2>' + sparkline(rpes, "#ffcc66") + '</div>';
+    html += '<div class="panel"><h2>RPE por sessão</h2>' + sparkline(rpes, "var(--data-3)") + '</div>';
 
     // FC média em cardio/corrida ao longo do tempo (objetivo 3: FC menor pro
     // mesmo esforço) e minutos em zona alta (Z4+Z5) — proxy mais direto de
@@ -1832,9 +1845,9 @@
     var cardioRegs = state.watch.slice().reverse().filter(function(w){ return TIPOS_ENDURANCE.indexOf(w.tipoAtividade) !== -1; });
     var fcCardio = cardioRegs.filter(function(w){ return w.fcMedia; }).map(function(w){ return {v: parseFloat(w.fcMedia), data: w.data}; });
     var zonaAltaCardio = cardioRegs.filter(function(w){ return w.zonaAlta; }).map(function(w){ return {v: parseFloat(w.zonaAlta), data: w.data}; });
-    html += '<div class="panel"><h2>FC média · Cardio (corrida/caminhada)</h2>' + sparkline(fcCardio, "#ff5252") +
+    html += '<div class="panel"><h2>FC média · Cardio (corrida/caminhada)</h2>' + sparkline(fcCardio, "var(--data-4)") +
       (fcCardio.length >= 2 ? '<p class="note">Objetivo: essa linha cair com o tempo pro mesmo ritmo/esforço — sinal de melhora da eficiência cardiovascular.</p>' : (fcCardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + '</div>';
-    html += '<div class="panel"><h2>Minutos em zona alta (Z4+Z5) · Cardio (corrida/caminhada)</h2>' + sparkline(zonaAltaCardio, "#c084fc") +
+    html += '<div class="panel"><h2>Minutos em zona alta (Z4+Z5) · Cardio (corrida/caminhada)</h2>' + sparkline(zonaAltaCardio, "var(--data-5)") +
       (zonaAltaCardio.length >= 2 ? '<p class="note">Objetivo: esse número cair pro mesmo treino — menos tempo perto da FC máxima pro mesmo esforço percebido.</p>' : '') + '</div>';
 
     html += '<div class="panel"><h2>Registrar peso corporal</h2>' +

@@ -412,3 +412,26 @@ Criei `test12.js`, com seed de 2 sessões + 1 registro de Watch, validando as 10
 - Mesmas de sempre: commitar/pushar o `vercel.json`, reteste ao vivo, validar no iPhone real.
 
 **Atualização (mesma sessão) — causa real era outra.** Pablo mandou print do PowerShell: todo `git add`/`commit`/`push` (dessa e de sessões passadas) estava sendo rodado em `C:\Users\pablo`, que não é repositório git — todo comando falhava com `fatal: not a git repository`. O último commit que realmente tinha ido pro GitHub era "Mapa muscular v6", de várias sessões atrás; tudo depois disso (calorias, vídeos, convenção de carga, categorias do Watch, timer automático, heatmap, anéis, cache-control) ficou só salvo localmente, nunca commitado. A pasta certa é `C:\Users\pablo\OneDrive\Documentos\Claude OS\1 - Projetos\Treino e Performance`. Como estou conectado ao computador do Pablo nesta sessão (device bridge), com autorização explícita dele rodei `git add`+`git commit` direto na pasta certa (precisei pedir permissão de delete pro sandbox pra limpar um `.git/index.lock` órfão primeiro) — o `git push` em si não deu pra eu fazer (o ambiente sandbox não tem as credenciais do GitHub dele), então ele rodou o `git push` final pelo próprio PowerShell.
+
+**Atualização 2 (mesmo dia, depois do push da Sessão 3.12) — o mesmo problema se repetiu.** Pablo avisou de novo que o celular não tinha atualizado. Desta vez a causa foi mais simples: as mudanças da Sessão 3.12 nunca chegaram a ser commitadas (nem localmente) — ficaram só como alterações não commitadas na pasta (`git status` mostrava tudo como "Changes not staged"). Com autorização dele de novo, rodei `git add`+`git commit` direto no computador (precisei pedir permissão de delete de novo pro sandbox, o `.git/index.lock` e um `objects/maintenance.lock` órfãos voltaram a aparecer), e ele rodou o `git push` final. Vale registrar como padrão: depois de eu entregar arquivos novos, sempre vale perguntar/confirmar se o commit+push realmente foi feito antes de assumir que o deploy vai refletir as mudanças.
+
+## Sessão 3.13 — 15/09/2026 — Reorganização de papéis por cor
+
+Pablo perguntou se uma nova disposição de cores deixaria o app melhor. Dei minha opinião honesta: a identidade laranja/preto (regra 11) não deveria mudar — funciona bem pra um app de treino e já é uma escolha deliberada dele — mas o USO das cores estava com problema: o laranja aparecia em praticamente tudo (botão, aba ativa, barra de progresso, número-herói, steppers) o que dilui seu próprio propósito como "isso é uma ação", e os 5 gráficos da aba Progresso usavam cores da família laranja/amarelo/vermelho de forma meio aleatória (só pra diferenciar uma linha da outra, sem significado), competindo visualmente com os botões. Ofereci 3 direções (reorganizar papéis mantendo a identidade / adicionar uma segunda cor de destaque / deixar como está) e ele escolheu a primeira, recomendada por mim.
+
+### O que mudei
+Três famílias de cor, cada uma com um papel fixo e exclusivo (documentado na extensão da regra 11 do CLAUDE.md):
+1. **Laranja (`--accent`/`--accent2`) = só ação/identidade** — botões, aba ativa, números neutros. Removido de qualquer gráfico.
+2. **Verde/amarelo/vermelho (`--state-good`/`--state-mid`/`--state-bad`) = único vocabulário de status** em qualquer lugar do app. `--danger` virou um alias direto de `--state-bad` (mesmo valor, `#ff5252`, agora com uma única fonte de verdade). Apliquei nos badges (`.badge.pr` e `.badge.warn`, que até então usavam cores próprias `--warn`/hardcoded). O mapa muscular (regra 12) ficou de fora de propósito — é um sistema de recência/volume já estabelecido, sem relação com "bom/ruim".
+3. **Paleta de dados nova** (`--data-1` a `--data-5`: azul `#38bdf8`, ciano `#22d3ee`, violeta `#a78bfa`, rosa `#fb7185`, roxo `#c084fc`) — exclusiva dos 5 gráficos da aba Progresso (peso corporal, carga do supino, RPE, FC média, zona alta), substituindo as cores antigas (`#ff7a29`, `#ffa94d`, `#ffcc66`, `#ff5252`, `#c084fc` — 4 delas da família laranja/vermelho de ação/estado).
+
+Os anéis de atividade do Dashboard (laranja/azul/amarelo pra Força/Cardio/Tênis) ficaram como estão — são cores de IDENTIDADE de cada anel, não dado nem status, então não fazem parte dessa reorganização.
+
+Removi a variável `--warn` (só era usada num badge sem uso real no app hoje) pra deixar a paleta mais enxuta, e simplifiquei `--danger` pra ser um alias de `--state-bad` em vez de um valor duplicado.
+
+### Testes
+Rodei a suíte completa (`test.js` a `test12.js`) — passou sem regressão (nenhum teste checava valores exatos de cor dos gráficos, só estrutura). Tirei screenshots do Dashboard e da aba Progresso com dados semeados pra conferir visualmente: os 5 gráficos agora formam uma família fria e coesa (azul/ciano/violeta/rosa/roxo), claramente distinta do laranja, que sobra só no botão "Salvar" — exatamente o efeito pretendido de "laranja raro e chamativo onde importa".
+
+### Pendências no fim da Sessão 3.13
+- Pablo revisa visualmente e avisa se algo incomodar.
+- Mesmas de sempre: commitar/pushar (**confirmar que o push realmente foi feito desta vez**, ver Atualização 2 da Sessão 3.11/3.12 acima), reteste ao vivo, validar no iPhone real.
