@@ -25,6 +25,9 @@
     --warn:#ffcc66;
     --danger:#ff5252;
     --radius:14px;
+    --state-good:#4ade80;
+    --state-mid:#fbbf24;
+    --state-bad:#ff5252;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -272,6 +275,77 @@
   .muscle-legend{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:12px;}
   .muscle-legend .li{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);}
   .muscle-legend .li .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;}
+
+  /* ---- Sessão 3.12: número-herói + estado unificado (Oura/WHOOP) ---- */
+  .hero-metric{text-align:center;padding:6px 0 14px;}
+  .hero-metric .hero-number{font-size:clamp(2.6rem,14vw,4rem);font-weight:800;line-height:1;color:var(--accent);}
+  .hero-metric .hero-label{font-size:0.78rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.4px;}
+  .ring-state-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-left:6px;flex:0 0 auto;}
+
+  /* ---- Bento grid (Dashboard) ---- */
+  .bento-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;}
+  .bento-tile{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+  .bento-tile.span2{grid-column:span 2;}
+  .bento-tile b{display:block;font-size:1.3rem;color:var(--accent);}
+  .bento-tile span{font-size:0.72rem;color:var(--muted);}
+  .bento-tile.bento-hero{padding:18px 14px;}
+  .bento-tile.bento-hero .hero-number{font-size:clamp(2.2rem,11vw,3.2rem);font-weight:800;line-height:1;color:var(--accent);}
+  .bento-tile.bento-hero .hero-label{font-size:0.72rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.4px;}
+
+  /* ---- Microinteração: bounce ao marcar série + celebração de PR ---- */
+  .chk{transition:transform .12s ease;}
+  .chk:active{transform:scale(0.82);}
+  @keyframes pulseOk{0%{transform:scale(1);}35%{transform:scale(1.012);box-shadow:0 0 0 3px rgba(74,222,128,0.30);}100%{transform:scale(1);box-shadow:none;}}
+  .exercise.pulse-ok{animation:pulseOk .45s ease;}
+  .confetti-piece{position:fixed;width:6px;height:6px;pointer-events:none;z-index:200;border-radius:1px;opacity:1;
+    animation:confettiBurst .8s cubic-bezier(.2,.6,.3,1) forwards;}
+  @keyframes confettiBurst{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0;}}
+
+  /* ---- Barra de carga proporcional (hoje x última vez x recorde) ---- */
+  .load-bar-group{margin:8px 0 6px;display:flex;flex-direction:column;gap:4px;}
+  .load-bar-row{display:flex;align-items:center;gap:8px;font-size:0.68rem;color:var(--muted);}
+  .load-bar-label{width:64px;flex:0 0 64px;}
+  .load-bar-track{flex:1;background:var(--panel);border-radius:99px;height:6px;overflow:hidden;}
+  .load-bar-fill{height:100%;border-radius:99px;transition:width .3s ease;}
+  .load-bar-val{width:46px;flex:0 0 46px;text-align:right;color:var(--text);font-variant-numeric:tabular-nums;}
+
+  /* ---- Carrossel horizontal de treinos recentes ---- */
+  .carousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .carousel::-webkit-scrollbar{display:none;}
+  .carousel-card{flex:0 0 auto;width:148px;scroll-snap-align:start;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px;}
+  .carousel-card .cc-date{font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;}
+  .carousel-card .cc-title{font-weight:700;font-size:0.86rem;margin:3px 0 8px;}
+  .carousel-card .cc-stat{font-size:0.78rem;color:var(--accent);}
+  .carousel-card .cc-stat.muted{color:var(--muted);margin-top:2px;}
+
+  /* ---- Divulgação progressiva (histórico da Análise) ---- */
+  .hist-item.details-item summary{cursor:pointer;list-style:none;}
+  .hist-item.details-item summary::-webkit-details-marker{display:none;}
+  .hist-item.details-item summary::after{content:"▾";float:right;color:var(--muted);transition:transform .2s ease;}
+  .hist-item.details-item[open] summary::after{transform:rotate(180deg);}
+  .hist-item.details-item .row{margin-top:8px;}
+
+  /* ---- "Resumo do mês" estilo retrospectiva (Wrapped) ---- */
+  .wrapped-overlay{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column;}
+  .wrapped-overlay.show{display:flex;}
+  .wrapped-close{position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:5;width:36px;height:36px;border-radius:50%;
+    background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;}
+  .wrapped-scroll{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+  .wrapped-card{flex:0 0 100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:40px 28px;}
+  .wrapped-card .wc-label{color:var(--muted);font-size:0.85rem;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.6px;}
+  .wrapped-card .wc-number{font-size:clamp(3rem,18vw,5.5rem);font-weight:800;color:var(--accent);line-height:1;}
+  .wrapped-card .wc-sub{color:var(--muted);font-size:0.85rem;margin-top:14px;max-width:280px;}
+  .wrapped-dots{display:flex;justify-content:center;gap:6px;padding:14px calc(14px + env(safe-area-inset-bottom));}
+  .wrapped-dots .d{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .wrapped-dots .d.on{background:var(--accent);}
+
+  /* ---- Skeleton loading (enquanto o Firestore carrega) ---- */
+  .skel-line{height:14px;border-radius:6px;margin-bottom:10px;
+    background:linear-gradient(90deg, var(--panel2) 25%, var(--border) 37%, var(--panel2) 63%);
+    background-size:400% 100%;animation:skeletonShimmer 1.4s ease infinite;}
+  .skel-line.w30{width:30%;} .skel-line.w40{width:40%;} .skel-line.w60{width:60%;} .skel-line.w90{width:90%;}
+  @keyframes skeletonShimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
 </style>
 </head>
 <body>
@@ -304,6 +378,12 @@
         <iframe id="videoFrame" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen playsinline></iframe>
       </div>
     </div>
+  </div>
+
+  <div class="wrapped-overlay" id="wrappedModal">
+    <button class="wrapped-close" id="wrappedClose">✕</button>
+    <div class="wrapped-scroll" id="wrappedScroll"></div>
+    <div class="wrapped-dots" id="wrappedDots"></div>
   </div>
 
   <div id="app">
@@ -486,7 +566,22 @@
   function showApp(){
     document.getElementById("lock").style.display = "none";
     document.getElementById("app").style.display = "block";
+    renderSkeletons();
     signInAndLoad();
+  }
+
+  // Skeleton "pulsando" enquanto os dados do Firestore ainda não chegaram —
+  // evita a sensação de app travado no primeiro carregamento (padrão comum em
+  // apps de referência, ver Sessão 3.12 do MEMORY.md). Some sozinho assim que
+  // renderAll() rodar de verdade e substituir o innerHTML de cada view.
+  function renderSkeletons(){
+    var skel = '<div class="panel">' +
+        '<div class="skel-line w60"></div><div class="skel-line w90"></div><div class="skel-line w40"></div>' +
+      '</div>' +
+      '<div class="panel">' +
+        '<div class="skel-line w40"></div><div class="skel-line w90"></div><div class="skel-line w60"></div>' +
+      '</div>';
+    document.querySelectorAll("section.view").forEach(function(s){ s.innerHTML = skel; });
   }
 
   document.getElementById("btnEnter").addEventListener("click", tryUnlock);
@@ -539,6 +634,40 @@
       el.classList.remove("show");
       setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 250);
     }, 4500);
+  }
+
+  // Confete sutil (sem lib nenhuma, uns quadradinhos coloridos em CSS puro)
+  // disparado quando um badge de PR aparece pela primeira vez numa sessão —
+  // reforço visual de recompensa (Sessão 3.12, ver research de retenção em
+  // apps fitness no MEMORY.md).
+  var CONFETTI_COLORS = ["#ff7a29", "#ffa94d", "#4ade80", "#38bdf8", "#fbbf24"];
+  function triggerConfetti(originEl){
+    if(!originEl) return;
+    var rect = originEl.getBoundingClientRect();
+    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    for(var i=0;i<14;i++){
+      var piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 40 + Math.random()*50;
+      piece.style.setProperty("--dx", (Math.cos(angle)*dist).toFixed(0) + "px");
+      piece.style.setProperty("--dy", (Math.sin(angle)*dist - 20).toFixed(0) + "px");
+      piece.style.setProperty("--rot", (Math.random()*360).toFixed(0) + "deg");
+      piece.style.left = cx + "px";
+      piece.style.top = cy + "px";
+      piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+      document.body.appendChild(piece);
+      (function(p){ setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); }, 850); })(piece);
+    }
+  }
+
+  // Sistema de cor por estado unificado (3 variáveis, mesmo significado em
+  // toda a tela — padrão WHOOP, ver research da Sessão 3.12): verde = na
+  // meta/acima, amarelo = perto (>=50%), vermelho = longe (<50%).
+  function stateColorForFraction(frac){
+    if(frac >= 1) return "var(--state-good)";
+    if(frac >= 0.5) return "var(--state-mid)";
+    return "var(--state-bad)";
   }
 
   function todayISO(){
@@ -1002,7 +1131,9 @@
         '<circle cx="' + cx + '" cy="' + cy + '" r="' + ring.r + '" fill="none" stroke="' + ring.color + '" stroke-width="' + strokeW + '" stroke-linecap="round" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
     }).join('');
     var legend = rings.map(function(ring){
-      return '<div class="ring-legend-item"><span class="ring-dot" style="background:' + ring.color + '"></span>' + ring.label + ': <b>' + ring.value + '</b>/' + ring.meta + ' ' + ring.unidade + '</div>';
+      var frac = ring.value / ring.meta;
+      return '<div class="ring-legend-item"><span class="ring-dot" style="background:' + ring.color + '"></span>' + ring.label + ': <b>' + ring.value + '</b>/' + ring.meta + ' ' + ring.unidade +
+        '<span class="ring-state-dot" style="background:' + stateColorForFraction(frac) + '" title="' + (frac>=1?"Na meta":frac>=0.5?"Quase lá":"Longe da meta") + '"></span></div>';
     }).join('');
     return '<div class="rings-row"><svg viewBox="0 0 120 120" width="132" height="132">' + svgRings + '</svg><div class="ring-legend">' + legend + '</div></div>' +
       '<p class="sub">💡 Força: meta do que você disse dar pra manter (2-3x/semana). Cardio: diretriz geral de atividade aeróbica moderada (OMS/ACSM, ~150min/semana). Tênis: referência solta de 1x/semana só pra dar escala ao anel — não é meta fixa, ajuste como quiser.</p>';
@@ -1017,14 +1148,49 @@
     var sessoesSemana = state.sessions.filter(function(s){ return new Date(s.data) >= cutoff; });
     var rpes = sessoesSemana.filter(function(s){ return s.rpeGeral; }).map(function(s){ return parseFloat(s.rpeGeral); });
     var rpeMedia = rpes.length ? (rpes.reduce(function(a,b){ return a+b; },0) / rpes.length).toFixed(1) : "—";
+
+    // Número-herói: dias distintos com QUALQUER registro (treino ou Watch)
+    // nos últimos 7 dias — o resumo mais direto de "quão consistente fui",
+    // com os anéis logo abaixo detalhando o quê (padrão Oura/WHOOP de "um
+    // número grande primeiro, detalhe depois" — ver Sessão 3.12 do MEMORY.md).
+    var diasAtivosSet = {};
+    sessoesSemana.forEach(function(s){ diasAtivosSet[s.data] = true; });
+    state.watch.filter(function(w){ return new Date(w.data) >= cutoff; }).forEach(function(w){ diasAtivosSet[w.data] = true; });
+    var diasAtivos = Object.keys(diasAtivosSet).length;
+    var heroColor = stateColorForFraction(diasAtivos / 4); // 4 dias/semana ~ referência confortável, não meta rígida
+
     return '<div class="panel">' +
       '<h2>Essa semana</h2>' +
-      '<p class="sub">Últimos 7 dias</p>' +
+      '<div class="hero-metric"><div class="hero-number" style="color:' + heroColor + '">' + diasAtivos + '</div><div class="hero-label">dias ativos nos últimos 7</div></div>' +
       renderActivityRings(cutoff) +
       '<div class="stat-row">' +
         '<div class="stat"><b>' + rpeMedia + '</b><span>RPE médio</span></div>' +
       '</div>' +
     '</div>';
+  }
+
+  // Carrossel horizontal com scroll-snap dos últimos treinos — padrão "Para
+  // você" do Apple Fitness+/Strava em vez de mais uma lista vertical (ver
+  // Sessão 3.12 do MEMORY.md). Histórico completo continua na aba Histórico;
+  // isso aqui é só um resumo rápido de relance no Dashboard.
+  function renderRecentWorkoutsCarousel(){
+    if(state.sessions.length === 0) return "";
+    var recentes = state.sessions.slice(0, 8);
+    var cards = recentes.map(function(s){
+      var total = 0, feitas = 0;
+      if(s.exercicios){
+        Object.keys(s.exercicios).forEach(function(k){
+          s.exercicios[k].forEach(function(r){ total++; if(r.ok) feitas++; });
+        });
+      }
+      return '<div class="carousel-card">' +
+        '<div class="cc-date">' + fmtDateBR(s.data) + '</div>' +
+        '<div class="cc-title">' + (s.nomeSessao || s.sessaoTipo) + '</div>' +
+        '<div class="cc-stat">' + feitas + '/' + total + ' séries</div>' +
+        (s.rpeGeral ? '<div class="cc-stat muted">RPE ' + s.rpeGeral + '</div>' : '') +
+      '</div>';
+    }).join('');
+    return '<div class="panel"><h2>Treinos recentes</h2><div class="carousel">' + cards + '</div></div>';
   }
 
   function renderDashboard(){
@@ -1047,15 +1213,17 @@
       '<div class="panel">' +
         '<h2>' + PLANO.bloco + '</h2>' +
         '<p class="sub">Progressão conservadora por ~2 semanas, depois sobe volume/carga normalmente.</p>' +
-        '<div class="stat-row">' +
-          '<div class="stat"><b>' + streak + '</b><span>dias seguidos</span></div>' +
-          '<div class="stat"><b>' + totalSessoes + '</b><span>treinos registrados</span></div>' +
-          '<div class="stat"><b>' + sugestao + '</b><span>próxima sessão</span></div>' +
+        '<div class="bento-grid">' +
+          '<div class="bento-tile bento-hero span2"><div class="hero-number" style="color:' + stateColorForFraction(streak/3) + '">' + streak + '</div><div class="hero-label">dias seguidos</div></div>' +
+          '<div class="bento-tile"><b>' + totalSessoes + '</b><span>treinos registrados</span></div>' +
+          '<div class="bento-tile"><b>' + sugestao + '</b><span>próxima sessão</span></div>' +
         '</div>' +
         renderWeekStrip() +
       '</div>' +
 
       renderResumoSemana() +
+
+      renderRecentWorkoutsCarousel() +
 
       (totalSessoes === 0 ? '<div class="panel"><p class="empty">Ainda não há treinos registrados. Escolha "Dia completo" acima e vá para a aba Treino para começar o primeiro.</p></div>' : '') +
 
@@ -1078,6 +1246,7 @@
      TREINO
      ========================================================= */
   var sessaoAtual = null; // {key, registros: {exId: [{carga,reps,ok}]}}
+  var prBadgeWasPr = {}; // exId -> bool, pra disparar confete só na transição p/PR (não em todo re-render)
 
   // Tipos de exercício: "peso_reps" (padrão, carga+reps), "peso_tempo"
   // (isométricos como prancha — carga extra opcional + segundos sustentados),
@@ -1098,6 +1267,7 @@
     });
     sessaoAtual = {key: key, registros: registros, rpeGeral:"", obsGeral:"", iniciadaEm: Date.now()};
     resetAllTimers();
+    prBadgeWasPr = {};
     renderTreino();
   }
 
@@ -1207,6 +1377,57 @@
     });
     var isPr = melhorHistorico && melhorHoje && melhorHoje > melhorHistorico;
     badge.style.display = isPr ? "inline-block" : "none";
+    // Confete só no instante em que vira PR (não em todo re-render/toda
+    // mudança de outro campo) — compara com o estado anterior guardado.
+    if(isPr && !prBadgeWasPr[exId]) triggerConfetti(badge);
+    prBadgeWasPr[exId] = !!isPr;
+  }
+
+  // Barra proporcional Hoje x Última vez x Recorde — visual em vez de só 3
+  // números soltos (inspirado no calculador de anilhas do Hevy, ver Sessão
+  // 3.12). Cardio fica de fora (duração/velocidade têm trade-off entre si,
+  // não faz sentido uma "barra maior é melhor" única, ver melhorMarcaExercicio).
+  function computeHojeMelhor(exId, tipo){
+    if(!sessaoAtual || !sessaoAtual.registros[exId]) return null;
+    var field = tipo === "peso_tempo" ? "segundos" : "carga";
+    var melhor = null;
+    sessaoAtual.registros[exId].forEach(function(r){
+      if(r.ok && r[field]){
+        var v = parseFloat(r[field]);
+        if(v && (!melhor || v > melhor)) melhor = v;
+      }
+    });
+    return melhor;
+  }
+
+  function renderLoadBarHtml(exId, tipo){
+    if(tipo === "cardio") return "";
+    var unidade = tipo === "peso_tempo" ? "s" : "kg";
+    var ultimo = ultimoRegistroExercicio(exId, tipo);
+    var ultimoVal = ultimo ? parseFloat(tipo === "peso_tempo" ? ultimo.segundos : ultimo.carga) : null;
+    var melhorHist = melhorMarcaExercicio(exId, tipo);
+    var hojeVal = computeHojeMelhor(exId, tipo);
+    var vals = [hojeVal, ultimoVal, melhorHist].filter(function(v){ return v; });
+    if(vals.length === 0) return '<div class="load-bar-group" id="loadBar-' + exId + '"></div>';
+    var max = Math.max.apply(null, vals);
+    function bar(label, val, color){
+      if(!val) return "";
+      var pct = Math.max(6, Math.round(val/max*100));
+      return '<div class="load-bar-row"><span class="load-bar-label">' + label + '</span>' +
+        '<div class="load-bar-track"><div class="load-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+        '<span class="load-bar-val">' + val + unidade + '</span></div>';
+    }
+    return '<div class="load-bar-group" id="loadBar-' + exId + '">' +
+      bar("Hoje", hojeVal, "var(--accent)") +
+      bar("Última vez", ultimoVal, "var(--muted)") +
+      bar("Recorde", melhorHist, "var(--state-good)") +
+    '</div>';
+  }
+
+  function updateLoadBar(exId, tipo){
+    var el = document.getElementById("loadBar-" + exId);
+    if(!el) return;
+    el.outerHTML = renderLoadBarHtml(exId, tipo);
   }
 
   function renderTreino(){
@@ -1264,6 +1485,7 @@
         '<h3>' + ex.nome + ' <span class="badge pr" id="prBadge-' + ex.id + '" style="display:none">🏆 Novo recorde!</span></h3>' +
         '<div class="meta">' + metaTxt + ultimoTxt + melhorTxt + '</div>' +
         (ex.obs ? '<div class="meta">💡 ' + ex.obs + '</div>' : '') +
+        renderLoadBarHtml(ex.id, tipo) +
         (tipo !== "cardio" ? '<button class="btn small secondary btn-repeat" type="button" data-ex="' + ex.id + '" data-tipo="' + tipo + '">↺ Repetir última série</button>' : '');
 
       if(tipo === "cardio"){
@@ -1360,13 +1582,24 @@
         else sessaoAtual.registros[exId][i][f] = inp.value;
         var ex = tpl.exercicios.filter(function(e){ return e.id === exId; })[0];
         if(f === "ok") updateSessionProgress();
-        if(ex) updatePrBadge(exId, tipoExercicio(ex));
+        if(ex){
+          updatePrBadge(exId, tipoExercicio(ex));
+          updateLoadBar(exId, tipoExercicio(ex));
+        }
         // Timer de descanso começa sozinho ao marcar uma série como feita —
         // padrão inspirado no Hevy (regra 18 do CLAUDE.md). Cardio fica de
         // fora (série única contínua, sem "descanso entre séries").
         if(f === "ok" && inp.checked && ex){
           var tipoRest = tipoExercicio(ex);
           if(tipoRest !== "cardio") startRestTimer(tipoRest === "peso_tempo" ? 60 : 90);
+          // Microanimação de confirmação (bounce no card) ao marcar série —
+          // feedback tátil visual, inspirado no botão de Kudos da Strava.
+          var card = inp.closest(".exercise");
+          if(card){
+            card.classList.remove("pulse-ok");
+            void card.offsetWidth; // força reflow pra permitir reanimar em cliques seguidos
+            card.classList.add("pulse-ok");
+          }
         }
       });
     });
@@ -1520,9 +1753,54 @@
     '</div>';
   }
 
+  // "Resumo do mês" estilo retrospectiva (Strava Year-in-Sport/Spotify
+  // Wrapped) — só ativa quando a pessoa quiser ver, não fica exibido sempre
+  // (ver Sessão 3.12 do MEMORY.md). Cards com número gigante, um assunto por
+  // tela, scroll horizontal com snap.
+  function buildWrappedCards(){
+    var cutoff = new Date(new Date(todayISO()).getTime() - 29*86400000);
+    var sessoesMes = state.sessions.filter(function(s){ return new Date(s.data) >= cutoff; });
+    var watchMes = state.watch.filter(function(w){ return new Date(w.data) >= cutoff; });
+    var cardioMin = 0;
+    watchMes.forEach(function(w){ if(TIPOS_ENDURANCE.indexOf(w.tipoAtividade) !== -1 && w.duracao) cardioMin += parseFloat(w.duracao) || 0; });
+    var rpes = sessoesMes.filter(function(s){ return s.rpeGeral; }).map(function(s){ return parseFloat(s.rpeGeral); });
+    var rpeMedia = rpes.length ? (rpes.reduce(function(a,b){ return a+b; },0) / rpes.length).toFixed(1) : "—";
+    var streak = calcStreak();
+    return [
+      {label: "Últimos 30 dias", number: sessoesMes.length, sub: "treinos de força/condicionamento registrados"},
+      {label: "Cardio no mês", number: Math.round(cardioMin), sub: "minutos de corrida/caminhada (Apple Watch)"},
+      {label: "Esforço médio", number: rpeMedia, sub: "RPE médio das sessões do mês (escala 1-10)"},
+      {label: "Sequência atual", number: streak, sub: streak === 1 ? "dia seguido treinando" : "dias seguidos treinando"}
+    ];
+  }
+
+  function openWrappedModal(){
+    var cards = buildWrappedCards();
+    var scroll = document.getElementById("wrappedScroll");
+    var dots = document.getElementById("wrappedDots");
+    scroll.innerHTML = cards.map(function(c){
+      return '<div class="wrapped-card"><div class="wc-label">' + c.label + '</div><div class="wc-number">' + c.number + '</div><div class="wc-sub">' + c.sub + '</div></div>';
+    }).join('');
+    dots.innerHTML = cards.map(function(_, i){ return '<span class="d' + (i===0?' on':'') + '"></span>'; }).join('');
+    scroll.scrollLeft = 0;
+    scroll.onscroll = function(){
+      var idx = Math.round(scroll.scrollLeft / scroll.clientWidth);
+      dots.querySelectorAll(".d").forEach(function(d,i){ d.classList.toggle("on", i===idx); });
+    };
+    document.getElementById("wrappedModal").classList.add("show");
+  }
+
+  function closeWrappedModal(){
+    document.getElementById("wrappedModal").classList.remove("show");
+  }
+
+  var wrappedCloseEl = document.getElementById("wrappedClose");
+  if(wrappedCloseEl) wrappedCloseEl.addEventListener("click", closeWrappedModal);
+
   function renderProgresso(){
     var el = document.getElementById("view-progresso");
-    var html = renderConsistencyHeatmap();
+    var html = '<div class="panel"><h2>Resumo do mês</h2><p class="sub">Uma retrospectiva rápida dos últimos 30 dias, em números grandes.</p><button class="btn secondary" id="btnResumoMes">📊 Ver resumo do mês</button></div>';
+    html += renderConsistencyHeatmap();
 
     // Peso corporal
     var pesos = state.body.slice().reverse().filter(function(b){ return b.peso; })
@@ -1564,6 +1842,7 @@
       '<button class="btn" id="btnSalvarPeso">Salvar</button></div>';
 
     el.innerHTML = html;
+    document.getElementById("btnResumoMes").addEventListener("click", openWrappedModal);
     document.getElementById("btnSalvarPeso").addEventListener("click", function(){
       var v = document.getElementById("pesoHoje").value;
       if(!v) return;
@@ -1628,11 +1907,16 @@
     if(state.watch.length === 0){
       html += '<p class="empty">Nenhum registro ainda.</p>';
     } else {
+      // <details>/<summary> nativos — resumo fechado por padrão, detalhe só
+      // ao tocar (divulgação progressiva estilo WHOOP, ver Sessão 3.12 do
+      // MEMORY.md), sem precisar de nenhum JS extra pra abrir/fechar.
       state.watch.forEach(function(w){
         var tipoLabel = TIPOS_ATIVIDADE[w.tipoAtividade] || "";
-        html += '<div class="hist-item"><div class="row"><b>' + fmtDateBR(w.data) + (tipoLabel?' · '+tipoLabel:'') + '</b><span>RPE ' + (w.rpe||"—") + '</span></div>' +
+        html += '<details class="hist-item details-item"><summary class="row"><b>' + fmtDateBR(w.data) + (tipoLabel?' · '+tipoLabel:'') + '</b><span>RPE ' + (w.rpe||"—") + '</span></summary>' +
           '<div class="row"><span>' + (w.duracao?w.duracao+"min":"") + (w.distancia?" · "+w.distancia+"km":"") + (w.ritmo?" · "+w.ritmo:"") + (w.fcMedia?" · FC méd "+w.fcMedia:"") + (w.fcMax?" (máx "+w.fcMax+")":"") + '</span>' +
-          '<span>' + (w.zonaAlta ? w.zonaAlta+"min em zona alta" : "") + '</span></div></div>';
+          '<span>' + (w.zonaAlta ? w.zonaAlta+"min em zona alta" : "") + '</span></div>' +
+          (w.observacoes ? '<div class="row"><span>' + w.observacoes + '</span></div>' : '') +
+        '</details>';
       });
     }
     html += '</div>';

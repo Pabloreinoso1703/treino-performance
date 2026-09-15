@@ -377,6 +377,38 @@ Pablo reportou que o app não estava atualizado no celular depois da Sessão 3.1
 
 **O que pedi pro Pablo confirmar/fazer** (não dá pra verificar remotamente sem acesso ao celular ou ao painel da Vercel dele): (1) confirmar que o push+deploy da Sessão 3.10 realmente terminou; (2) abrir a URL direto no Safari (não pelo atalho da tela de início) pra confirmar que a versão nova carrega; (3) se already carregando a versão nova no Safari mas o atalho da tela de início continuar velho, remover o atalho e adicionar de novo.
 
+## Sessão 3.12 — 15/09/2026 — Pesquisa de apps de referência e 10 melhorias visuais/UX
+
+Pablo pediu uma nova pesquisa profunda em apps de fitness de renome (dessa vez focada especificamente em visual/layout, não em metodologia de treino) e, na resposta seguinte, aprovou incorporar todas as ideias de uma vez ("Pode incorporar todas. Se necessário posteriormente eu falo o que incomodou para retirar ou voltar o que era antes.").
+
+### Pesquisa
+Pesquisei (via agente com WebSearch/WebFetch) o design atual (2025/2026) de Strava, Nike Training Club, Peloton, Apple Fitness+, Oura, WHOOP e Hevy/Strong/Fitbod, além de tendências gerais de UI mobile (bento grid, microinterações, dark mode). Principais achados usados: Oura/WHOOP abandonaram "parede de números do mesmo tamanho" por um número-herói gigante + detalhe progressivo; WHOOP usa só 3 cores com significado fixo em toda tela; Strava usa um botão de "Kudos" com bounce+partícula como reforço tátil; Hevy tem calculador visual de anilhas (barra proporcional) em vez de só número; bento grid é o padrão de dashboard modular mais comum agora; `<details>`/`<summary>` nativo cobre divulgação progressiva sem JS extra; skeleton shimmer substituiu spinner como padrão de loading.
+
+### As 10 melhorias implementadas
+1. **Sistema de cor por estado unificado** — `--state-good/--state-mid/--state-bad` (verde/amarelo/vermelho) via `stateColorForFraction()`, usado no streak, no número de dias ativos da semana e num pontinho de estado ao lado de cada anel de atividade.
+2. **Número-herói** — streak vira a tile grande do bento grid; um novo número (dias distintos com registro nos últimos 7 dias) vira o destaque do card "Essa semana", com os anéis como detalhe abaixo.
+3. **Layout bento no Dashboard** — o `stat-row` de 3 números iguais virou um grid 2 colunas com o streak ocupando a tile grande.
+4. **Microanimação ao marcar série "OK"** — bounce no checkbox + pulso de borda verde no card do exercício inteiro.
+5. **Confete ao bater recorde** — ~14 partículas CSS disparadas do próprio badge de PR, só no instante da transição pra "é recorde" (nunca repete em re-renders).
+6. **Barra de carga proporcional** — Hoje/Última vez/Recorde como 3 barrinhas visuais em vez de só texto, atualiza ao vivo a cada série marcada.
+7. **Divulgação progressiva na Análise** — histórico do Watch virou `<details>`/`<summary>`, fechado por padrão.
+8. **Carrossel horizontal de treinos recentes** — últimos 8 treinos como cards deslizáveis no Dashboard (scroll-snap).
+9. **"Resumo do mês" estilo retrospectiva** — botão na aba Progresso abre 4 telas cheias (sessões do mês, minutos de cardio, RPE médio, streak atual), scroll horizontal com snap, calculado sobre os últimos 30 dias.
+10. **Skeleton loading** — placeholders "pulsando" nas 6 abas enquanto o Firestore ainda não respondeu, no lugar de tela em branco.
+
+Detalhes técnicos de cada um (nomes de função, classes CSS, decisões de escopo) estão documentados na extensão da regra 18 do CLAUDE.md.
+
+### Testes
+Rodei a suíte completa (`test.js` a `test11.js`) antes de começar — passou sem regressão. Um ajuste colateral: adicionar um novo painel sem `<h2>` no topo da aba Progresso (o botão do resumo do mês) quebrou uma asserção frágil do `test9.js` que assumia que todo `.panel` tem `<h2>` — resolvido dando um título de verdade ao painel ("Resumo do mês") e deixando o `test9.js` mais defensivo (`p.querySelector('h2')` checado antes de acessar `.textContent`).
+
+Criei `test12.js`, com seed de 2 sessões + 1 registro de Watch, validando as 10 features juntas: skeleton aparece e depois some (a janela real é curta demais pro stub de teste observar o "aparece", mas confirmei que ele some certinho depois do load — não é um defeito, é só o stub responder rápido demais pra capturar o instante); número-herói do streak e de dias ativos batendo com o esperado; 3 tiles no bento grid; 2 cards no carrossel; histórico da Análise como `<details>` fechados; pulse-ok aplicado ao marcar série; barra de carga com 3 linhas; **zero** confetes ao marcar 15kg (abaixo do recorde de 20kg) e **14** confetes ao marcar 22kg (acima do recorde) — confirmando que o disparo é só na transição real pra PR; modal de resumo do mês com 4 cards e números internamente consistentes com o seed (2 sessões, 20min de cardio, RPE médio 6.5, streak 2), fechando corretamente ao clicar no X. Suíte completa (`test.js` a `test12.js`, 12 arquivos) passa sem PAGEERROR/erro de console relevante/diálogo bloqueante.
+
+### Pendências no fim da Sessão 3.12
+- Pablo revisa visualmente no celular/computador e avisa o que incomodar pra ajustar ou reverter pontualmente (como ele mesmo sugeriu).
+- Mesmas de sempre: commitar/pushar, reteste ao vivo, validar no iPhone real.
+
 ### Pendências no fim da Sessão 3.11
 - Aguardar confirmação do Pablo se o passo a passo resolveu, ou se o deploy nem tinha terminado ainda.
 - Mesmas de sempre: commitar/pushar o `vercel.json`, reteste ao vivo, validar no iPhone real.
+
+**Atualização (mesma sessão) — causa real era outra.** Pablo mandou print do PowerShell: todo `git add`/`commit`/`push` (dessa e de sessões passadas) estava sendo rodado em `C:\Users\pablo`, que não é repositório git — todo comando falhava com `fatal: not a git repository`. O último commit que realmente tinha ido pro GitHub era "Mapa muscular v6", de várias sessões atrás; tudo depois disso (calorias, vídeos, convenção de carga, categorias do Watch, timer automático, heatmap, anéis, cache-control) ficou só salvo localmente, nunca commitado. A pasta certa é `C:\Users\pablo\OneDrive\Documentos\Claude OS\1 - Projetos\Treino e Performance`. Como estou conectado ao computador do Pablo nesta sessão (device bridge), com autorização explícita dele rodei `git add`+`git commit` direto na pasta certa (precisei pedir permissão de delete pro sandbox pra limpar um `.git/index.lock` órfão primeiro) — o `git push` em si não deu pra eu fazer (o ambiente sandbox não tem as credenciais do GitHub dele), então ele rodou o `git push` final pelo próprio PowerShell.

@@ -44,7 +44,7 @@ const { chromium } = require('playwright');
   console.log('graficos em Progresso:', JSON.stringify(chartTitles));
   const fcChartSvgPoints = await page.evaluate(() => {
     var panels = Array.from(document.querySelectorAll('#view-progresso .panel'));
-    var p = panels.find(p => p.querySelector('h2').textContent.includes('FC média'));
+    var p = panels.find(p => { var h = p.querySelector('h2'); return h && h.textContent.includes('FC média'); });
     var path = p ? p.querySelector('svg path') : null;
     return path ? path.getAttribute('d') : null;
   });
