@@ -435,3 +435,22 @@ Rodei a suíte completa (`test.js` a `test12.js`) — passou sem regressão (nen
 ### Pendências no fim da Sessão 3.13
 - Pablo revisa visualmente e avisa se algo incomodar.
 - Mesmas de sempre: commitar/pushar (**confirmar que o push realmente foi feito desta vez**, ver Atualização 2 da Sessão 3.11/3.12 acima), reteste ao vivo, validar no iPhone real.
+
+## Sessão 3.14 — 15/09/2026 — Segunda cor de destaque (teal), "modo ação" x "modo dados"
+
+Depois do push da Sessão 3.13, Pablo confirmou que o commit/deploy funcionou mas disse "não encontrei nenhuma diferença". Expliquei que era esperado: a reorganização da 3.13 foi um refinamento de bastidor (só os 5 gráficos de Progresso mudam visivelmente; o resto foram trocas por valores idênticos ou já introduzidos na 3.12). Perguntei se ele queria algo com impacto visual mais perceptível — ele confirmou que sim, e pediu sugestão de cor.
+
+### Processo
+Recomendei **teal `#2dd4bf`** por ser complementar ao laranja (quente x frio, contraste clássico) sem colidir com significados já existentes (azul do anel de Cardio/paleta de dados, amarelo do `--state-mid`/anel de Tênis) — descartei azul elétrico e verde-limão por esses motivos. Em vez de só descrever em texto, montei uma página HTML de comparação (3 opções lado a lado com o laranja atual + uma simulação de uso em botões/aba) e mandei a captura de tela pra ele decidir olhando, não só lendo hex codes. Ele confirmou o teal.
+
+### O que implementei
+Teal vira a "segunda identidade" do app, mas com um limite claro: **o laranja continua sendo a única cor de ação primária, sempre** — nenhum botão `.btn` principal vira teal, nem dentro de tela "de dados" (preserva a regra da 3.13 de "laranja = faça algo"). O que o teal marca é a SEÇÃO: abas de ação sobre o treino (Dashboard, Treino) continuam laranja; abas de consulta/registro passivo de dados (Histórico, Progresso, Análise, Metas) ficam teal — aba ativa na navegação, títulos dos painéis, célula preenchida do heatmap de consistência, seta dos `<details>` da Análise, borda dos itens de meta, números e bolinhas do modal "Resumo do mês", e um novo botão secundário com borda teal ("Ver resumo do mês"). Implementado com uma única classe no `<body>` (`mode-dados`, alternada em `setTab()` via lista `TABS_DADOS`) consumida por CSS — nenhuma lógica de cor espalhada pelas funções de render.
+
+Detalhes técnicos completos na extensão da regra 11 do CLAUDE.md.
+
+### Testes
+Suíte completa (`test.js` a `test12.js`) sem regressão — nenhum teste checa cor exata, só estrutura/dados. Tirei screenshots das abas Progresso, Análise e Metas pra confirmar visualmente: a diferença agora é imediatamente óbvia (aba ativa, títulos e destaques em teal), bem diferente do resultado quase imperceptível da 3.13.
+
+### Pendências no fim da Sessão 3.14
+- Pablo revisa visualmente e confirma se o impacto ficou do jeito que ele queria.
+- Mesmas de sempre: commitar/pushar (confirmar que o push realmente aconteceu), reteste ao vivo, validar no iPhone real.
