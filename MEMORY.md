@@ -542,3 +542,30 @@ Pesquisei tendências atuais (2026) de apps de fitness/wearables além do que j�
 ### Pendências no fim da Sessão 3.17
 - Aguardar Pablo escolher quais das 6 ideias (se alguma) ele quer que eu implemente a seguir.
 - Commitar/pushar (confirmar que o push realmente aconteceu).
+
+## Sessão 3.18 — 16/09/2026 — As 6 ideias implementadas de uma vez + solução para sessões sem Apple Watch
+
+Pablo respondeu ao brainstorm da Sessão 3.17 com "Pode incrementar todas" (as 6 ideias) e, junto, avisou que vai acontecer de treinar sem o Apple Watch (descarregado ou esquecido) e pediu uma solução pra isso não comprometer os objetivos/gráficos do app.
+
+### Solução "sem dados do Apple Watch"
+Antes de mexer em qualquer coisa, mapeei o que já era resiliente por arquitetura: `state.sessions` (aba Treino) já captura RPE/duração de toda sessão de força/condicionamento independente do Watch — streak, heatmap e o gráfico "RPE por sessão" nunca dependeram de `state.watch`. Só os gráficos de FC média/zona alta/calorias (que vêm só de `treino_watch`) eram realmente afetados, e mesmo esses já toleram pontos faltando sem quebrar (a sparkline só desenha os pontos que existem). O gap real era de UX: faltava um jeito de marcar "treinei mas não tenho dado do Watch" como estado intencional, em vez de parecer um formulário incompleto.
+
+**Implementado:** checkbox "Sem dados do Apple Watch nessa sessão" no topo do formulário da aba Análise (`#wSemWatch`). Marcada, ela esconde os campos biométricos (distância, ritmo, FC média, FC máxima, zona alta, calorias — `#wCamposWatch`) mas mantém Duração e RPE sempre visíveis e preenchíveis (não dependem do Watch). Ao salvar, o doc grava `semWatch:true` e os campos biométricos como string vazia (marca explícita de "não medido", não um campo simplesmente esquecido). O histórico de registros na própria aba mostra um badge "sem Watch" nesses casos. Em Progresso, os painéis de FC média e zona alta ganharam uma nota de cobertura de dados ("X de Y sessões de cardio têm FC registrada, Z sem Watch") — transparente sobre por que o gráfico tem menos pontos num trecho, sem soar como erro. Também suavizei o toast de `finalizarSessao()`, que antes presumia que o Pablo sempre completaria com dados do Watch. Documentado como regra 24 do CLAUDE.md.
+
+### As 6 features, todas em Progresso/Dashboard
+1. **Volume semanal por grupamento vs meta 12-20 séries** — reaproveita o cálculo que já colore o mapa muscular (`computeMuscleStatus().seriesSemana`) pra desenhar uma barra por grupamento (10 no total) com uma faixa clara marcando a zona-alvo 12-20; cor da barra segue o vocabulário de estado padrão do app (vermelho/verde/amarelo).
+2. **Histórico dedicado por exercício** — o nome de qualquer exercício (na aba Treino e dentro do detalhe de sessão do Histórico) virou um link que abre um bottom-sheet com o gráfico de progressão daquele exercício específico ao longo de toda a história + uma linha do tempo marcando 🏆 nas sessões que bateram recorde até então.
+3. **Fotos de progresso lado a lado** — nova coleção `treino_photos`. Upload comprime a foto no próprio navegador (canvas, redimensiona pro lado maior caber em 900px, reexporta em JPEG ~72%) antes de salvar no Firestore como `data:` URL — evita precisar de Firebase Storage e mantém cada doc bem abaixo do limite por documento. Tira de miniaturas + comparação lado a lado ao tocar em duas fotos. Deixei explícito na própria UI que as fotos ficam no mesmo banco privado protegido por senha do resto do app.
+4. **Tendência de carga de treino** — média móvel de 7 dias do total de séries feitas, últimas 4 semanas, como sparkline logo abaixo dos anéis de atividade no card "Essa semana", com rótulo de tendência (subindo/estável/caindo).
+5. **Selos por marcos** — 10 selos em 3 famílias 100% objetivas (sequência de dias: 3/7/14/30; total de treinos: 10/25/50/100; % de consistência nas últimas 12 semanas: 50%/75%), coerente com a regra de nunca automatizar interpretação subjetiva de dados.
+6. **Calendário mensal navegável** — grid de mês (usando os helpers de fuso-horário seguro `parseISOToLocalDate`/`fmtLocalISO`, nunca `new Date(iso)` puro) ao lado do heatmap de 84 dias já existente; só navega pra trás, nunca mostra mês futuro; dias com treino abrem o mesmo detalhe de sessão do Histórico (Sessão 3.17), mantendo os pontos de entrada consistentes.
+
+Documentado como regra 25 do CLAUDE.md (uma entrada por feature, com os nomes de função/CSS relevantes pra manutenção futura).
+
+### Testes
+Escrevi `test15.js` (sem-Watch: checkbox esconde campos, salva `semWatch:true` com campos vazios, badge no histórico, nota de cobertura certa em Progresso), `test16.js` (volume por grupamento + histórico por exercício, nos dois pontos de entrada), `test17.js` (upload de foto comprimida + comparação lado a lado), `test18.js` (tendência de carga de treino aparece com gráfico), e `test19.js` (selos corretos pro streak/total de treinos semeados + calendário mensal: dia de hoje treinado, navegação sem ir pro futuro, clique abre detalhe de sessão). Rodei a suíte completa (`test.js`-`test19.js`) do zero depois de cada feature nova — sem regressão em nenhuma etapa.
+
+### Pendências no fim da Sessão 3.18
+- Sincronizar `plataforma-treino-performance.html` com o `index.html` final e entregar os arquivos pro Pablo.
+- Perguntar de novo (nunca assumir autorização de sessões anteriores) se ele quer que eu rode `git add`/`git commit` direto no computador dele, e devolver o comando de `git push` pra ele rodar (sem credenciais no sandbox pra isso).
+- Pablo testar as 6 features + o fluxo "sem Watch" na prática e dar feedback (em especial: se a compressão de foto ficou boa o suficiente visualmente, e se os selos fazem sentido como estão calibrados).

@@ -183,7 +183,7 @@
     background:#000;border-radius:12px;overflow:hidden;
   }
   .video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
-  #videoModalClose, #sessionDetailClose{
+  #videoModalClose, #sessionDetailClose, #exerciseHistClose{
     position:absolute;top:10px;right:14px;width:30px;height:30px;border-radius:50%;
     background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:0.95rem;font-weight:700;
     cursor:pointer;z-index:1;
@@ -196,6 +196,8 @@
     border-radius:10px;padding:11px;font-size:0.9rem;
   }
   .field textarea{min-height:70px;resize:vertical;}
+  .field-check{display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted);margin-bottom:14px;padding:10px;background:var(--panel2);border-radius:10px;}
+  .field-check input{width:auto;}
 
   .hist-item{border-bottom:1px solid var(--border);padding:10px 0;cursor:pointer;transition:background .15s ease;border-radius:8px;}
   .hist-item:last-child{border-bottom:none;}
@@ -224,6 +226,12 @@
   .sd-set.ok{color:var(--text);border-color:var(--state-good);}
   .sd-set.best{background:rgba(74,222,128,0.14);border-color:var(--state-good);color:var(--state-good);font-weight:700;}
   .sd-obs{font-size:0.8rem;color:var(--muted);white-space:pre-wrap;margin-top:4px;}
+  .ex-name-btn{background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;text-align:left;}
+  .ex-name-btn:active{opacity:0.7;}
+  .eh-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--panel2);border-radius:10px;margin-bottom:6px;font-size:0.78rem;}
+  .eh-row .eh-date{color:var(--muted);flex:0 0 auto;width:70px;}
+  .eh-row .eh-detail{flex:1;color:var(--text);}
+  .eh-row .eh-pr{flex:0 0 auto;}
   .badge{display:inline-block;background:rgba(255,169,77,0.16);color:var(--accent2);border-radius:6px;padding:2px 8px;font-size:0.68rem;margin-right:6px;}
   .badge.warn{background:rgba(251,191,36,0.15);color:var(--state-mid);}
   .badge.pr{background:rgba(74,222,128,0.16);color:var(--state-good);}
@@ -245,6 +253,28 @@
 
   .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 10px;}
   .note{font-size:0.76rem;color:var(--muted);margin-top:8px;}
+  .note-mini{font-size:0.7rem;color:var(--muted);opacity:0.75;margin-top:4px;}
+  .load-trend{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:8px;}
+  .badge-chip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;background:var(--panel2);opacity:0.35;filter:grayscale(1);text-align:center;}
+  .badge-chip.unlocked{opacity:1;filter:none;background:rgba(255,122,41,0.12);}
+  .badge-icon{font-size:1.4rem;}
+  .badge-name{font-size:0.62rem;color:var(--muted);line-height:1.2;}
+  .badge-chip.unlocked .badge-name{color:var(--text);}
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .cal-nav-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:0.9rem;cursor:pointer;}
+  .cal-nav-btn:disabled{opacity:0.3;cursor:default;}
+  .cal-month-label{font-size:0.85rem;font-weight:600;color:var(--text);}
+  .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+  .cal-dow-label{text-align:center;font-size:0.62rem;color:var(--muted);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:0.72rem;color:var(--muted);background:var(--panel2);position:relative;}
+  .cal-cell.empty{background:transparent;}
+  .cal-cell.watch-only{background:rgba(56,189,248,0.14);color:var(--text);}
+  .cal-cell.trained{background:rgba(74,222,128,0.18);color:var(--text);font-weight:600;}
+  .cal-cell.trained.clickable{cursor:pointer;}
+  .cal-cell.trained.clickable:active{opacity:0.7;}
+  .cal-cell.today{outline:2px solid var(--accent);outline-offset:-2px;}
   svg.chart{width:100%;height:140px;display:block;}
 
   #toast{
@@ -343,6 +373,23 @@
   .load-bar-track{flex:1;background:var(--panel);border-radius:99px;height:6px;overflow:hidden;}
   .load-bar-fill{height:100%;border-radius:99px;transition:width .3s ease;}
   .load-bar-val{width:46px;flex:0 0 46px;text-align:right;color:var(--text);font-variant-numeric:tabular-nums;}
+  .vol-group{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+  .vol-row{display:flex;align-items:center;gap:10px;font-size:0.74rem;}
+  .vol-label{width:130px;flex:0 0 130px;color:var(--text);}
+  .vol-track{position:relative;flex:1;height:10px;background:var(--panel);border-radius:99px;overflow:hidden;}
+  .vol-zone{position:absolute;top:0;bottom:0;background:rgba(255,255,255,0.14);}
+  .vol-fill{position:absolute;top:0;bottom:0;left:0;border-radius:99px;transition:width .3s ease;}
+  .vol-val{width:88px;flex:0 0 88px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .photo-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;}
+  .photo-thumb{position:relative;flex:0 0 auto;width:72px;height:72px;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--panel2);}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-thumb.selected{border-color:var(--accent);}
+  .photo-thumb .pdate{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:0.55rem;text-align:center;padding:1px 0;}
+  .photo-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .photo-compare .pc-slot{background:var(--panel2);border-radius:12px;overflow:hidden;text-align:center;min-height:120px;display:flex;flex-direction:column;justify-content:center;}
+  .photo-compare .pc-slot img{width:100%;display:block;max-height:280px;object-fit:cover;}
+  .photo-compare .pc-slot .pc-label{font-size:0.7rem;color:var(--muted);padding:6px;}
+  .photo-compare .pc-empty{padding:30px 10px;color:var(--muted);font-size:0.72rem;}
 
   /* ---- Carrossel horizontal de treinos recentes ---- */
   .carousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -429,6 +476,14 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="exerciseHistModal">
+    <div class="modal-box modal-tall">
+      <div class="sheet-handle"></div>
+      <button id="exerciseHistClose">✕</button>
+      <div id="exerciseHistBody"></div>
+    </div>
+  </div>
+
   <div id="app">
     <header class="top">
       <h1 id="hdrTitle">Dashboard</h1>
@@ -483,7 +538,8 @@
     watch: "treino_watch",
     subjective: "treino_subjective",
     body: "treino_body",
-    goals: "treino_goals"
+    goals: "treino_goals",
+    photos: "treino_photos"
   };
 
   // Vídeos curtos (YouTube Shorts, ≤60s) de execução por exercício. IDs podem
@@ -592,6 +648,7 @@
     watch: [],
     subjective: [],
     body: [],
+    photos: [],
     activeTab: "dashboard",
     todaySessionKey: null
   };
@@ -663,12 +720,14 @@
       db.collection(COL.sessions).orderBy("data","desc").limit(60).get(),
       db.collection(COL.watch).orderBy("data","desc").limit(30).get(),
       db.collection(COL.subjective).orderBy("data","desc").limit(30).get(),
-      db.collection(COL.body).orderBy("data","desc").limit(60).get()
+      db.collection(COL.body).orderBy("data","desc").limit(60).get(),
+      db.collection(COL.photos).orderBy("data","desc").limit(60).get()
     ]).then(function(results){
       state.sessions = results[0].docs.map(docToObj);
       state.watch = results[1].docs.map(docToObj);
       state.subjective = results[2].docs.map(docToObj);
       state.body = results[3].docs.map(docToObj);
+      state.photos = results[4].docs.map(docToObj);
       renderAll();
     }).catch(function(err){
       console.error("Erro ao carregar dados:", err);
@@ -1047,7 +1106,7 @@
         return '<span class="sd-set ok">' + label + '</span>';
       }).join('');
 
-      return '<div class="sd-exercise"><h4>' + nomeExercicio(s.sessaoTipo, exId) + '</h4>' +
+      return '<div class="sd-exercise"><h4><button type="button" class="ex-name-btn" data-ex-hist="' + exId + '">' + nomeExercicio(s.sessaoTipo, exId) + '</button></h4>' +
         '<div class="sd-sets">' + setsHtml + '</div>' +
         renderSessionLoadBarHtml(exId, tipo, s.data, melhorDaSessao) +
       '</div>';
@@ -1079,7 +1138,11 @@
   function openSessionDetail(sessionId){
     var s = state.sessions.filter(function(x){ return x._id === sessionId; })[0];
     if(!s) return;
-    document.getElementById("sessionDetailBody").innerHTML = renderSessionDetailHtml(s);
+    var body = document.getElementById("sessionDetailBody");
+    body.innerHTML = renderSessionDetailHtml(s);
+    body.querySelectorAll("[data-ex-hist]").forEach(function(btn){
+      btn.addEventListener("click", function(){ openExerciseHistory(btn.getAttribute("data-ex-hist")); });
+    });
     var modal = document.getElementById("sessionDetailModal");
     if(modal) modal.classList.add("show");
   }
@@ -1093,6 +1156,96 @@
   if(sessionDetailCloseEl) sessionDetailCloseEl.addEventListener("click", closeSessionDetail);
   var sessionDetailEl = document.getElementById("sessionDetailModal");
   if(sessionDetailEl) sessionDetailEl.addEventListener("click", function(e){ if(e.target.id === "sessionDetailModal") closeSessionDetail(); });
+
+  // Sessão 3.18, feature 2 — histórico dedicado por exercício: toca no nome
+  // do exercício (na aba Treino ou dentro do detalhe de uma sessão) e abre
+  // um sheet com a evolução completa daquele exercício específico ao longo
+  // do tempo (gráfico + linha do tempo de marcas), sem precisar abrir sessão
+  // por sessão pra montar esse quadro na cabeça.
+  function findExercicioDef(exId){
+    var chaves = Object.keys(PLANO.sessoes);
+    for(var i=0;i<chaves.length;i++){
+      var tpl = PLANO.sessoes[chaves[i]];
+      var found = tpl.exercicios.filter(function(ex){ return ex.id === exId; })[0];
+      if(found) return found;
+    }
+    return null;
+  }
+
+  function renderExerciseHistoryHtml(exId){
+    var exDef = findExercicioDef(exId);
+    var tipo = exDef ? tipoExercicio(exDef) : "peso_reps";
+    var nome = exDef ? exDef.nome : exId;
+
+    // state.sessions vem desc (mais recente primeiro); pro gráfico/linha do
+    // tempo em ordem cronológica precisamos inverter.
+    var cronologico = state.sessions.slice().reverse().filter(function(s){ return s.exercicios && s.exercicios[exId] && s.exercicios[exId].length; });
+
+    var pontos = [];
+    var linhas = [];
+    var melhorAteAgora = null;
+    cronologico.forEach(function(s){
+      var feitos = s.exercicios[exId].filter(function(r){ return r.ok; });
+      if(!feitos.length) return;
+      var valorPrincipal = null, detalhe = "";
+      if(tipo === "cardio"){
+        var comVel = feitos.filter(function(r){ return r.velocidade; });
+        if(!comVel.length) return;
+        var melhorSessaoV = comVel.reduce(function(a,b){ return parseFloat(b.velocidade) > parseFloat(a.velocidade) ? b : a; });
+        valorPrincipal = parseFloat(melhorSessaoV.velocidade);
+        detalhe = (melhorSessaoV.duracaoMin||"—") + "min a " + melhorSessaoV.velocidade + "km/h";
+      } else if(tipo === "peso_tempo"){
+        var comSeg = feitos.filter(function(r){ return r.segundos; });
+        if(!comSeg.length) return;
+        var melhorSetT = comSeg.reduce(function(a,b){ return parseFloat(b.segundos) > parseFloat(a.segundos) ? b : a; });
+        valorPrincipal = parseFloat(melhorSetT.segundos);
+        detalhe = melhorSetT.segundos + "s" + (melhorSetT.carga && melhorSetT.carga !== "0" ? " com " + melhorSetT.carga + "kg extra" : " (peso corporal)");
+      } else {
+        var comCarga = feitos.filter(function(r){ return r.carga; });
+        if(!comCarga.length) return;
+        var melhorSetC = comCarga.reduce(function(a,b){ return parseFloat(b.carga) > parseFloat(a.carga) ? b : a; });
+        valorPrincipal = parseFloat(melhorSetC.carga);
+        detalhe = melhorSetC.carga + "kg × " + (melhorSetC.reps||"—");
+      }
+      if(valorPrincipal === null) return;
+      var isPr = tipo !== "cardio" && (melhorAteAgora === null || valorPrincipal > melhorAteAgora);
+      if(tipo !== "cardio" && (melhorAteAgora === null || valorPrincipal > melhorAteAgora)) melhorAteAgora = valorPrincipal;
+      pontos.push({v: valorPrincipal, data: s.data});
+      linhas.push({data: s.data, detalhe: detalhe, isPr: isPr});
+    });
+
+    var corLinha = tipo === "peso_tempo" ? "var(--data-3)" : (tipo === "cardio" ? "var(--data-5)" : "var(--data-2)");
+    var chartHtml = pontos.length >= 2 ? sparkline(pontos, corLinha) :
+      '<p class="empty">Precisa de pelo menos 2 sessões com esse exercício pra desenhar o gráfico.</p>';
+
+    var timelineHtml = linhas.slice().reverse().map(function(l){
+      return '<div class="eh-row"><span class="eh-date">' + fmtDateBR(l.data) + '</span>' +
+        '<span class="eh-detail">' + l.detalhe + '</span>' +
+        (l.isPr ? '<span class="eh-pr badge pr" style="position:static">🏆</span>' : '') +
+      '</div>';
+    }).join('');
+
+    return '<h3 class="sd-title">' + nome + '</h3>' +
+      '<p class="sd-sub">' + linhas.length + ' sessão(ões) registrada(s) com esse exercício' + (MUSCLE_MAP[exId] ? ' · ' + MUSCLE_MAP[exId].map(function(mg){ return MUSCLE_GROUP_LABELS[mg]||mg; }).join(", ") : '') + '</p>' +
+      chartHtml +
+      '<div style="margin-top:14px">' + (timelineHtml || '<p class="empty">Nenhum registro ainda.</p>') + '</div>';
+  }
+
+  function openExerciseHistory(exId){
+    document.getElementById("exerciseHistBody").innerHTML = renderExerciseHistoryHtml(exId);
+    var modal = document.getElementById("exerciseHistModal");
+    if(modal) modal.classList.add("show");
+  }
+
+  function closeExerciseHistory(){
+    var modal = document.getElementById("exerciseHistModal");
+    if(modal) modal.classList.remove("show");
+  }
+
+  var exerciseHistCloseEl = document.getElementById("exerciseHistClose");
+  if(exerciseHistCloseEl) exerciseHistCloseEl.addEventListener("click", closeExerciseHistory);
+  var exerciseHistEl = document.getElementById("exerciseHistModal");
+  if(exerciseHistEl) exerciseHistEl.addEventListener("click", function(e){ if(e.target.id === "exerciseHistModal") closeExerciseHistory(); });
 
   /* =========================================================
      NAV
@@ -1359,6 +1512,7 @@
      ========================================================= */
   var dayTypeChoice = null; // "completo" | "leve" | "sem"
   var analisePrefill = null; // {tipoAtividade, duracao} setado por finalizarSessao(), consumido uma vez por renderAnalise()
+  var photoCompareSelection = []; // até 2 ids de foto escolhidos pra comparação lado a lado (não persiste — só estado de UI da aba Progresso)
 
   // Anéis de atividade estilo Apple Fitness — Força / Cardio / Tênis, um por
   // objetivo da anamnese (composição corporal via força, condicionamento via
@@ -1399,6 +1553,52 @@
       '<p class="sub">💡 Força: meta do que você disse dar pra manter (2-3x/semana). Cardio: diretriz geral de atividade aeróbica moderada (OMS/ACSM, ~150min/semana). Tênis: referência solta de 1x/semana só pra dar escala ao anel — não é meta fixa, ajuste como quiser.</p>';
   }
 
+  // Sessão 3.18, feature 4 — extensão dos anéis de atividade com uma
+  // tendência de "carga de treino" (total de séries feitas, em média móvel
+  // de 7 dias, últimas 4 semanas). Os anéis já mostram "essa semana isolada";
+  // essa linha complementa mostrando se o volume está subindo, estável ou
+  // caindo ao longo do tempo — só aparece quando já existe pelo menos 1
+  // sessão registrada, pra não mostrar uma linha reta em zero pra quem tá
+  // começando agora.
+  function computeDailySets(){
+    var dailySets = {};
+    state.sessions.forEach(function(s){
+      if(!s.exercicios) return;
+      var count = 0;
+      Object.keys(s.exercicios).forEach(function(exId){
+        count += s.exercicios[exId].filter(function(r){ return r.ok; }).length;
+      });
+      dailySets[s.data] = (dailySets[s.data]||0) + count;
+    });
+    return dailySets;
+  }
+
+  function renderTrainingLoadTrend(){
+    if(state.sessions.length === 0) return "";
+    var dailySets = computeDailySets();
+    var today = new Date(todayISO());
+    var rolling = [];
+    for(var i = 27; i >= 0; i--){
+      var end = new Date(today.getTime() - i*86400000);
+      var sum = 0;
+      for(var j=0;j<7;j++){
+        var d = new Date(end.getTime() - j*86400000);
+        sum += dailySets[fmtLocalISO(d)] || 0;
+      }
+      rolling.push({v: sum, data: fmtLocalISO(end)});
+    }
+    var atual = rolling[rolling.length-1].v;
+    var seteDiasAtras = rolling[rolling.length-8].v;
+    var tendenciaTxt = "estável";
+    if(seteDiasAtras === 0 && atual > 0) tendenciaTxt = "subindo";
+    else if(atual > seteDiasAtras * 1.15) tendenciaTxt = "subindo";
+    else if(atual < seteDiasAtras * 0.85) tendenciaTxt = "caindo";
+    return '<div class="load-trend">' +
+      '<p class="sub">Carga de treino (séries totais/semana, média móvel de 7 dias, últimas 4 semanas) — tendência: ' + tendenciaTxt + '</p>' +
+      sparkline(rolling, "var(--accent2)") +
+    '</div>';
+  }
+
   // Resumo dos últimos 7 dias — anéis de força/cardio/tênis + RPE médio, pra
   // uma leitura rápida "como foi minha semana" sem ter que somar manualmente
   // entre as abas (padrão comum em apps como Whoop/Fitbod).
@@ -1423,6 +1623,7 @@
       '<h2>Essa semana</h2>' +
       '<div class="hero-metric"><div class="hero-number" style="color:' + heroColor + '">' + diasAtivos + '</div><div class="hero-label">dias ativos nos últimos 7</div></div>' +
       renderActivityRings(cutoff) +
+      renderTrainingLoadTrend() +
       '<div class="stat-row">' +
         '<div class="stat"><b>' + rpeMedia + '</b><span>RPE médio</span></div>' +
       '</div>' +
@@ -1742,7 +1943,7 @@
       var metaTxt = tipo === "cardio" ? ('Meta: ' + ex.reps + ' · ' + ex.rir) : (ex.series + ' séries x ' + ex.reps + ' · RIR alvo ' + ex.rir);
 
       html += '<div class="exercise" data-ex="' + ex.id + '">' +
-        '<h3>' + ex.nome + ' <span class="badge pr" id="prBadge-' + ex.id + '" style="display:none">🏆 Novo recorde!</span></h3>' +
+        '<h3><button type="button" class="ex-name-btn" data-ex-hist="' + ex.id + '">' + ex.nome + '</button> <span class="badge pr" id="prBadge-' + ex.id + '" style="display:none">🏆 Novo recorde!</span></h3>' +
         '<div class="meta">' + metaTxt + ultimoTxt + melhorTxt + '</div>' +
         (ex.obs ? '<div class="meta">💡 ' + ex.obs + '</div>' : '') +
         renderLoadBarHtml(ex.id, tipo) +
@@ -1882,6 +2083,9 @@
     el.querySelectorAll(".btn-repeat").forEach(function(btn){
       btn.addEventListener("click", function(){ fillNextSetLikeLast(btn.getAttribute("data-ex"), btn.getAttribute("data-tipo")); });
     });
+    el.querySelectorAll("[data-ex-hist]").forEach(function(btn){
+      btn.addEventListener("click", function(){ openExerciseHistory(btn.getAttribute("data-ex-hist")); });
+    });
     el.querySelectorAll(".step-btn").forEach(function(btn){
       btn.addEventListener("click", function(){
         var exId = btn.getAttribute("data-ex"), i = parseInt(btn.getAttribute("data-i"),10), f = btn.getAttribute("data-f");
@@ -1931,7 +2135,7 @@
       resetAllTimers();
       loadAll();
       setTab("analise");
-      showToast("Treino salvo! Confirme os dados do Apple Watch dessa sessão.");
+      showToast("Treino salvo! Se tiver os dados do Apple Watch, complete-os na Análise (ou marque \"sem Watch\" se não tiver).");
     }).catch(function(err){
       console.error(err);
       showToast("Não foi possível salvar o treino agora. Verifique sua conexão e tente novamente antes de sair da página.", true);
@@ -2016,6 +2220,141 @@
     '</div>';
   }
 
+  // Sessão 3.18, feature 6 — calendário mensal navegável, como alternativa
+  // mais "de calendário" ao heatmap de 84 dias acima (que é ótimo pra ver
+  // padrão geral, mas não deixa claro QUAL dia da semana/mês foi cada
+  // marca). Só navega pra trás (nunca mostra meses futuros). Dias com treino
+  // registrado são clicáveis e abrem o mesmo detalhe de sessão do Histórico
+  // (Sessão 3.17), pra manter os dois pontos de entrada consistentes.
+  var calendarViewOffset = 0; // 0 = mês atual; negativo = meses pra trás
+  function renderMonthCalendar(){
+    var todayD = parseISOToLocalDate(todayISO());
+    var viewDate = new Date(todayD.getFullYear(), todayD.getMonth() + calendarViewOffset, 1);
+    var y = viewDate.getFullYear(), m = viewDate.getMonth();
+    var monthLabel = viewDate.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
+    monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    var sessionByDate = {};
+    state.sessions.forEach(function(s){ if(!sessionByDate[s.data]) sessionByDate[s.data] = s; });
+    var watchDates = {};
+    state.watch.forEach(function(w){ watchDates[w.data] = true; });
+
+    var startDow = new Date(y, m, 1).getDay(); // 0=domingo, campo de calendário local
+    var daysInMonth = new Date(y, m+1, 0).getDate();
+    var DOW = ["D","S","T","Q","Q","S","S"];
+
+    var cells = [];
+    for(var i=0;i<startDow;i++){ cells.push('<div class="cal-cell empty"></div>'); }
+    for(var day=1; day<=daysInMonth; day++){
+      var iso = fmtLocalISO(new Date(y, m, day));
+      var isToday = iso === todayISO();
+      var sessao = sessionByDate[iso];
+      var temTreino = !!sessao;
+      var temWatch = !!watchDates[iso];
+      var cls = "cal-cell" + (isToday ? " today" : "") + (temTreino ? " trained clickable" : (temWatch ? " watch-only" : ""));
+      var titulo = fmtDateBR(iso) + (temTreino ? " · treino registrado" : (temWatch ? " · Watch registrado" : ""));
+      cells.push('<div class="' + cls + '"' + (temTreino ? ' data-session-id="' + sessao._id + '"' : '') + ' title="' + titulo + '">' + day + '</div>');
+    }
+
+    var isCurrentMonth = calendarViewOffset === 0;
+    return '<div class="panel"><h2>Calendário mensal</h2>' +
+      '<div class="cal-header">' +
+        '<button class="cal-nav-btn" id="calPrevMonth" type="button">‹</button>' +
+        '<span class="cal-month-label">' + monthLabel + '</span>' +
+        '<button class="cal-nav-btn" id="calNextMonth" type="button"' + (isCurrentMonth ? ' disabled' : '') + '>›</button>' +
+      '</div>' +
+      '<div class="cal-dow-row">' + DOW.map(function(l){ return '<div class="cal-dow-label">' + l + '</div>'; }).join('') + '</div>' +
+      '<div class="cal-grid">' + cells.join('') + '</div>' +
+      '<p class="sub" style="margin-top:8px">🟢 treino registrado · 🔵 só Watch. Toque num dia com treino pra ver o detalhe.</p>' +
+    '</div>';
+  }
+
+  function wireMonthCalendar(el){
+    var prevBtn = document.getElementById("calPrevMonth");
+    var nextBtn = document.getElementById("calNextMonth");
+    if(prevBtn) prevBtn.addEventListener("click", function(){ calendarViewOffset--; renderProgresso(); });
+    if(nextBtn) nextBtn.addEventListener("click", function(){ if(calendarViewOffset < 0){ calendarViewOffset++; renderProgresso(); } });
+    el.querySelectorAll(".cal-cell[data-session-id]").forEach(function(cell){
+      cell.addEventListener("click", function(){ openSessionDetail(cell.getAttribute("data-session-id")); });
+    });
+  }
+
+  // Sessão 3.18, feature 1 — volume semanal por grupamento vs meta de
+  // 12-20 séries/semana (referência comum de hipertrofia). Reaproveita o
+  // mesmo cálculo de "seriesSemana" que já alimenta o mapa muscular
+  // (computeMuscleStatus), só que aqui pra TODOS os grupamentos lado a
+  // lado, com uma faixa clara na barra marcando a zona-alvo — dá pra ver
+  // de relance quais grupos estão abaixo, dentro ou acima da meta.
+  function renderVolumeGrupamento(){
+    var status = computeMuscleStatus();
+    var maxScale = 24; // teto visual do gráfico — a meta (12-20) cabe com folga antes disso
+    var zoneStartPct = (12/maxScale)*100;
+    var zoneWidthPct = ((20-12)/maxScale)*100;
+    var rows = ALL_MUSCLE_GROUPS.map(function(mg){
+      var s = status[mg].seriesSemana;
+      var pct = Math.min(100, (s/maxScale)*100);
+      var color = s < 12 ? "var(--state-bad)" : (s <= 20 ? "var(--state-good)" : "var(--state-mid)");
+      var label = MUSCLE_GROUP_LABELS[mg].split(" (")[0];
+      return '<div class="vol-row"><span class="vol-label">' + label + '</span>' +
+        '<div class="vol-track"><div class="vol-zone" style="left:' + zoneStartPct.toFixed(1) + '%;width:' + zoneWidthPct.toFixed(1) + '%"></div>' +
+        '<div class="vol-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
+        '<span class="vol-val">' + s + ' séries</span></div>';
+    }).join('');
+    return '<div class="panel"><h2>Volume semanal por grupamento</h2>' +
+      '<p class="sub">Séries feitas nos últimos 7 dias vs meta de 12-20 séries/semana por grupamento (faixa clara na barra). Abaixo da faixa = pouco estímulo pra crescer; acima = pode ser volume alto demais pro grupo.</p>' +
+      '<div class="vol-group">' + rows + '</div></div>';
+  }
+
+  // Sessão 3.18, feature 5 — selos/conquistas por marcos. Só 3 famílias de
+  // marco, todas 100% objetivas (sem nenhuma interpretação subjetiva —
+  // coerente com a regra 5 do CLAUDE.md de que interpretação de dados é
+  // sempre em conversa, nunca automatizada aqui dentro): sequência de dias
+  // seguidos treinando, total de treinos registrados, e % de consistência
+  // nas últimas 12 semanas (mesma métrica do heatmap acima).
+  var ACHIEVEMENT_BADGES = [
+    {id:"streak3", icon:"🔥", label:"3 dias seguidos", check: function(s){ return s.streak >= 3; }},
+    {id:"streak7", icon:"🔥", label:"7 dias seguidos", check: function(s){ return s.streak >= 7; }},
+    {id:"streak14", icon:"🔥", label:"14 dias seguidos", check: function(s){ return s.streak >= 14; }},
+    {id:"streak30", icon:"🔥", label:"30 dias seguidos", check: function(s){ return s.streak >= 30; }},
+    {id:"sessions10", icon:"💪", label:"10 treinos", check: function(s){ return s.totalSessions >= 10; }},
+    {id:"sessions25", icon:"💪", label:"25 treinos", check: function(s){ return s.totalSessions >= 25; }},
+    {id:"sessions50", icon:"💪", label:"50 treinos", check: function(s){ return s.totalSessions >= 50; }},
+    {id:"sessions100", icon:"💪", label:"100 treinos", check: function(s){ return s.totalSessions >= 100; }},
+    {id:"consistency50", icon:"📅", label:"50% consistência (12 sem.)", check: function(s){ return s.consistencyPct >= 50; }},
+    {id:"consistency75", icon:"📅", label:"75% consistência (12 sem.)", check: function(s){ return s.consistencyPct >= 75; }}
+  ];
+
+  function computeAchievementStats(){
+    var days = 84;
+    var today = new Date(todayISO());
+    var activeDatesSet = {};
+    state.sessions.forEach(function(s){ activeDatesSet[s.data] = true; });
+    state.watch.forEach(function(w){ activeDatesSet[w.data] = true; });
+    var activeDays = 0;
+    for(var i=0;i<days;i++){
+      var iso = new Date(today.getTime() - i*86400000).toISOString().slice(0,10);
+      if(activeDatesSet[iso]) activeDays++;
+    }
+    return {
+      streak: calcStreak(),
+      totalSessions: state.sessions.length,
+      consistencyPct: Math.round((activeDays/days)*100)
+    };
+  }
+
+  function renderAchievementBadges(){
+    var stats = computeAchievementStats();
+    var unlockedFlags = ACHIEVEMENT_BADGES.map(function(b){ return b.check(stats); });
+    var unlockedCount = unlockedFlags.filter(Boolean).length;
+    var chips = ACHIEVEMENT_BADGES.map(function(b, i){
+      return '<div class="badge-chip' + (unlockedFlags[i]?' unlocked':'') + '"><span class="badge-icon">' + b.icon + '</span><span class="badge-name">' + b.label + '</span></div>';
+    }).join('');
+    return '<div class="panel"><h2>Selos</h2>' +
+      '<p class="sub">' + unlockedCount + ' de ' + ACHIEVEMENT_BADGES.length + ' selos desbloqueados — baseados só em dados objetivos (sequência, total de treinos, consistência), sem nenhuma meta que dependa de interpretação.</p>' +
+      '<div class="badge-grid">' + chips + '</div>' +
+    '</div>';
+  }
+
   // "Resumo do mês" estilo retrospectiva (Strava Year-in-Sport/Spotify
   // Wrapped) — só ativa quando a pessoa quiser ver, não fica exibido sempre
   // (ver Sessão 3.12 do MEMORY.md). Cards com número gigante, um assunto por
@@ -2064,6 +2403,9 @@
     var el = document.getElementById("view-progresso");
     var html = '<div class="panel"><h2>Resumo do mês</h2><p class="sub">Uma retrospectiva rápida dos últimos 30 dias, em números grandes.</p><button class="btn secondary" id="btnResumoMes">📊 Ver resumo do mês</button></div>';
     html += renderConsistencyHeatmap();
+    html += renderMonthCalendar();
+    html += renderAchievementBadges();
+    html += renderVolumeGrupamento();
 
     // Peso corporal
     var pesos = state.body.slice().reverse().filter(function(b){ return b.peso; })
@@ -2093,16 +2435,24 @@
     // "quanto do esforço foi quase-máximo", já que a FC média sozinha mistura
     // trechos leves e pesados da mesma sessão.
     var cardioRegs = state.watch.slice().reverse().filter(function(w){ return TIPOS_ENDURANCE.indexOf(w.tipoAtividade) !== -1; });
+    var cardioSemWatch = cardioRegs.filter(function(w){ return w.semWatch; }).length;
     var fcCardio = cardioRegs.filter(function(w){ return w.fcMedia; }).map(function(w){ return {v: parseFloat(w.fcMedia), data: w.data}; });
     var zonaAltaCardio = cardioRegs.filter(function(w){ return w.zonaAlta; }).map(function(w){ return {v: parseFloat(w.zonaAlta), data: w.data}; });
+    // Nota de cobertura de dados: quantas sessões de cardio têm cada métrica
+    // medida, pra deixar claro (sem alarmar) quando o gráfico tem menos pontos
+    // por causa de sessões sem Watch, em vez de parecer um erro (regra 24).
+    var coverageNoteFc = cardioRegs.length ? '<p class="note-mini">' + fcCardio.length + ' de ' + cardioRegs.length + ' sessões de cardio têm FC registrada' + (cardioSemWatch ? ' (' + cardioSemWatch + ' sem Watch)' : '') + '.</p>' : '';
+    var coverageNoteZona = cardioRegs.length ? '<p class="note-mini">' + zonaAltaCardio.length + ' de ' + cardioRegs.length + ' sessões de cardio têm zona alta registrada' + (cardioSemWatch ? ' (' + cardioSemWatch + ' sem Watch)' : '') + '.</p>' : '';
     html += '<div class="panel"><h2>FC média · Cardio (corrida/caminhada)</h2>' + sparkline(fcCardio, "var(--data-4)") +
-      (fcCardio.length >= 2 ? '<p class="note">Objetivo: essa linha cair com o tempo pro mesmo ritmo/esforço — sinal de melhora da eficiência cardiovascular.</p>' : (fcCardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + '</div>';
+      (fcCardio.length >= 2 ? '<p class="note">Objetivo: essa linha cair com o tempo pro mesmo ritmo/esforço — sinal de melhora da eficiência cardiovascular.</p>' : (fcCardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + coverageNoteFc + '</div>';
     html += '<div class="panel"><h2>Minutos em zona alta (Z4+Z5) · Cardio (corrida/caminhada)</h2>' + sparkline(zonaAltaCardio, "var(--data-5)") +
-      (zonaAltaCardio.length >= 2 ? '<p class="note">Objetivo: esse número cair pro mesmo treino — menos tempo perto da FC máxima pro mesmo esforço percebido.</p>' : '') + '</div>';
+      (zonaAltaCardio.length >= 2 ? '<p class="note">Objetivo: esse número cair pro mesmo treino — menos tempo perto da FC máxima pro mesmo esforço percebido.</p>' : '') + coverageNoteZona + '</div>';
 
     html += '<div class="panel"><h2>Registrar peso corporal</h2>' +
       '<div class="field"><label>Peso hoje (kg)</label><input type="number" step="0.1" id="pesoHoje" placeholder="Ex: 87.5"></div>' +
       '<button class="btn" id="btnSalvarPeso">Salvar</button></div>';
+
+    html += renderFotosPanel();
 
     el.innerHTML = html;
     document.getElementById("btnResumoMes").addEventListener("click", openWrappedModal);
@@ -2112,6 +2462,94 @@
       db.collection(COL.body).add({data: todayISO(), peso: v, criadoEm: new Date().toISOString()})
         .then(function(){ loadAll(); })
         .catch(function(err){ console.error(err); showToast("Não foi possível salvar agora.", true); });
+    });
+    wireFotosPanel(el);
+    wireMonthCalendar(el);
+  }
+
+  // Sessão 3.18, feature 3 — fotos de progresso lado a lado. Guardadas como
+  // base64 dentro do próprio Firestore (sem Firebase Storage, pra não
+  // complicar a arquitetura de HTML único / Firestore isolado — regra 3 do
+  // CLAUDE.md), depois de comprimidas no navegador (canvas, máx. 900px de
+  // lado maior, JPEG ~72%) pra caber com folga no limite de ~1MiB por
+  // documento do Firestore. Comparação lado a lado é local (não persiste):
+  // tocar em duas fotos na tira mostra as duas maiores, uma do lado da outra.
+  function compressImageFile(file, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var maxDim = 900;
+        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        var w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        cb(canvas.toDataURL("image/jpeg", 0.72));
+      };
+      img.onerror = function(){ showToast("Não foi possível processar essa imagem.", true); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ showToast("Não foi possível ler o arquivo.", true); };
+    reader.readAsDataURL(file);
+  }
+
+  function renderPhotoCompareHtml(){
+    var slots = [0,1].map(function(i){
+      var id = photoCompareSelection[i];
+      var foto = id ? state.photos.filter(function(p){ return p._id === id; })[0] : null;
+      if(!foto) return '<div class="pc-slot"><div class="pc-empty">Toque numa foto acima</div></div>';
+      return '<div class="pc-slot"><img src="' + foto.imagem + '" alt="Foto de ' + fmtDateBR(foto.data) + '"><div class="pc-label">' + fmtDateBR(foto.data) + '</div></div>';
+    }).join('');
+    return '<div class="photo-compare">' + slots + '</div>';
+  }
+
+  function renderFotosPanel(){
+    var fotos = state.photos; // já vem desc (mais recente primeiro), igual state.sessions
+    var stripHtml = fotos.map(function(p){
+      var sel = photoCompareSelection.indexOf(p._id) !== -1;
+      return '<div class="photo-thumb' + (sel?' selected':'') + '" data-photo-id="' + p._id + '"><img src="' + p.imagem + '" alt="Foto de ' + fmtDateBR(p.data) + '"><span class="pdate">' + fmtDateBR(p.data) + '</span></div>';
+    }).join('');
+    return '<div class="panel"><h2>Fotos de progresso</h2>' +
+      '<p class="sub">Guardadas no mesmo banco privado protegido por senha desse app, junto com o resto dos seus dados. Toque em duas fotos pra comparar lado a lado.</p>' +
+      '<input type="file" accept="image/*" id="photoUploadInput" style="display:none">' +
+      '<button class="btn secondary" id="btnAddPhoto" type="button">📷 Adicionar foto</button>' +
+      (fotos.length ? '<div class="photo-strip" id="photoStrip">' + stripHtml + '</div>' : '<p class="empty" style="margin-top:10px">Nenhuma foto ainda.</p>') +
+      '<div id="photoCompareArea">' + (fotos.length ? renderPhotoCompareHtml() : '') + '</div>' +
+    '</div>';
+  }
+
+  function wireFotosPanel(el){
+    var input = document.getElementById("photoUploadInput");
+    var addBtn = document.getElementById("btnAddPhoto");
+    if(addBtn && input) addBtn.addEventListener("click", function(){ input.click(); });
+    if(input) input.addEventListener("change", function(){
+      var file = input.files[0];
+      if(!file) return;
+      compressImageFile(file, function(dataUrl){
+        db.collection(COL.photos).add({data: todayISO(), imagem: dataUrl, criadoEm: new Date().toISOString()})
+          .then(function(){ loadAll(); })
+          .catch(function(err){ console.error(err); showToast("Não foi possível salvar a foto agora.", true); });
+      });
+      input.value = "";
+    });
+    el.querySelectorAll("[data-photo-id]").forEach(function(node){
+      node.addEventListener("click", function(){
+        var id = node.getAttribute("data-photo-id");
+        var idx = photoCompareSelection.indexOf(id);
+        if(idx !== -1){ photoCompareSelection.splice(idx,1); }
+        else {
+          if(photoCompareSelection.length >= 2) photoCompareSelection.shift();
+          photoCompareSelection.push(id);
+        }
+        var strip = document.getElementById("photoStrip");
+        if(strip) strip.querySelectorAll(".photo-thumb").forEach(function(t){
+          t.classList.toggle("selected", photoCompareSelection.indexOf(t.getAttribute("data-photo-id")) !== -1);
+        });
+        var compareArea = document.getElementById("photoCompareArea");
+        if(compareArea) compareArea.innerHTML = renderPhotoCompareHtml();
+      });
     });
   }
 
@@ -2149,21 +2587,25 @@
       '<h2>Registrar dados do Apple Watch</h2>' +
       '<p class="sub">Dados medidos pelo relógio + sua percepção. Sem sincronização automática — é você quem digita aqui depois do treino. Se fez força E cardio no mesmo dia, salve dois registros separados (a FC de cada um costuma ser bem diferente).</p>' +
       (prefill ? '<p class="note">💡 Pré-preenchi tipo e duração com base no treino que você acabou de finalizar — confira e ajuste o resto com os dados do relógio.</p>' : '') +
+      '<label class="field-check"><input type="checkbox" id="wSemWatch"> Sem dados do Apple Watch nessa sessão (descarregado, esqueci de ativar, etc.)</label>' +
       '<div class="field"><label>Tipo de atividade</label><select id="wTipo">' +
         Object.keys(TIPOS_ATIVIDADE).map(function(k){ return '<option value="' + k + '"' + (prefill && prefill.tipoAtividade === k ? ' selected' : '') + '>' + TIPOS_ATIVIDADE[k] + '</option>'; }).join('') +
       '</select></div>' +
       '<div class="field"><label>Duração (min)</label><input type="number" id="wDuracao" value="' + (prefill && prefill.duracao ? prefill.duracao : '') + '"></div>' +
+      '<div id="wCamposWatch">' +
       '<div class="field"><label>Distância (km, se aplicável)</label><input type="number" step="0.01" id="wDistancia"></div>' +
       '<div class="field"><label>Ritmo médio (min/km, se corrida)</label><input type="text" placeholder="Ex: 7min40s/km" id="wRitmo"></div>' +
       '<div class="field"><label>FC média (bpm)</label><input type="number" id="wFcMedia"></div>' +
       '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="wFcMax"></div>' +
       '<div class="field"><label>Minutos em zona alta (Z4+Z5, ≥166bpm aprox.)</label><input type="number" step="0.1" id="wZonaAlta"></div>' +
       '<div class="field"><label>Calorias ativas (kcal)</label><input type="number" id="wCalorias"></div>' +
+      '</div>' +
       '<div class="field"><label>RPE/Esforço desse treino (1-10)</label><input type="number" min="1" max="10" id="wRpe"></div>' +
       '<div class="field"><label>Sono da noite anterior (horas aprox.)</label><input type="number" step="0.5" id="wSono"></div>' +
       '<div class="field"><label>Sensação de recuperação/fadiga</label><textarea id="wObs" placeholder="Ex: senti mais cansado que o normal, dor leve no ombro, etc."></textarea></div>' +
       '<button class="btn" id="btnSalvarAnalise">Salvar registro</button>' +
       '<p class="note">Depois de salvar, traga esses números pra nossa conversa — a interpretação (o que isso significa pro próximo treino) eu faço com você, não um algoritmo automático aqui dentro.</p>' +
+      '<p class="note">Sem Watch dessa vez? Sem problema — marque a caixa acima e registre só duração + RPE. Isso já é suficiente pra manter sua sequência e os gráficos de esforço/consistência corretos; só os gráficos de FC ficam com menos pontos naquele intervalo, o que é esperado e não distorce a tendência.</p>' +
       '</div>';
 
     html += '<div class="panel"><h2>Registros anteriores</h2>';
@@ -2175,7 +2617,7 @@
       // MEMORY.md), sem precisar de nenhum JS extra pra abrir/fechar.
       state.watch.forEach(function(w){
         var tipoLabel = TIPOS_ATIVIDADE[w.tipoAtividade] || "";
-        html += '<details class="hist-item details-item"><summary class="row"><b>' + fmtDateBR(w.data) + (tipoLabel?' · '+tipoLabel:'') + '</b><span>RPE ' + (w.rpe||"—") + '</span></summary>' +
+        html += '<details class="hist-item details-item"><summary class="row"><b>' + fmtDateBR(w.data) + (tipoLabel?' · '+tipoLabel:'') + (w.semWatch ? ' <span class="badge warn">sem Watch</span>' : '') + '</b><span>RPE ' + (w.rpe||"—") + '</span></summary>' +
           '<div class="row"><span>' + (w.duracao?w.duracao+"min":"") + (w.distancia?" · "+w.distancia+"km":"") + (w.ritmo?" · "+w.ritmo:"") + (w.fcMedia?" · FC méd "+w.fcMedia:"") + (w.fcMax?" (máx "+w.fcMax+")":"") + '</span>' +
           '<span>' + (w.zonaAlta ? w.zonaAlta+"min em zona alta" : "") + '</span></div>' +
           (w.observacoes ? '<div class="row"><span>' + w.observacoes + '</span></div>' : '') +
@@ -2185,20 +2627,30 @@
     html += '</div>';
 
     el.innerHTML = html;
+    var semWatchEl = document.getElementById("wSemWatch");
+    var camposWatchEl = document.getElementById("wCamposWatch");
+    semWatchEl.addEventListener("change", function(){
+      camposWatchEl.style.display = semWatchEl.checked ? "none" : "";
+    });
     document.getElementById("btnSalvarAnalise").addEventListener("click", function(){
+      var semWatch = semWatchEl.checked;
       var doc = {
         data: todayISO(),
         tipoAtividade: document.getElementById("wTipo").value,
         duracao: document.getElementById("wDuracao").value,
-        distancia: document.getElementById("wDistancia").value,
-        ritmo: document.getElementById("wRitmo").value,
-        fcMedia: document.getElementById("wFcMedia").value,
-        fcMax: document.getElementById("wFcMax").value,
-        zonaAlta: document.getElementById("wZonaAlta").value,
-        calorias: document.getElementById("wCalorias").value,
+        // Sem dados do Watch: os campos biométricos ficam em branco de
+        // propósito (não é falta de preenchimento, é a marca explícita de
+        // "não medido dessa vez") — regra 24 do CLAUDE.md.
+        distancia: semWatch ? "" : document.getElementById("wDistancia").value,
+        ritmo: semWatch ? "" : document.getElementById("wRitmo").value,
+        fcMedia: semWatch ? "" : document.getElementById("wFcMedia").value,
+        fcMax: semWatch ? "" : document.getElementById("wFcMax").value,
+        zonaAlta: semWatch ? "" : document.getElementById("wZonaAlta").value,
+        calorias: semWatch ? "" : document.getElementById("wCalorias").value,
         rpe: document.getElementById("wRpe").value,
         sono: document.getElementById("wSono").value,
         observacoes: document.getElementById("wObs").value,
+        semWatch: semWatch,
         criadoEm: new Date().toISOString()
       };
       db.collection(COL.watch).add(doc).then(function(){ loadAll(); setTab("analise"); })
