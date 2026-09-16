@@ -482,3 +482,29 @@ Auditei todo o uso de `new Date(`/`.toISOString()`/`.getDay()`/`.getDate()`/`get
 - Entregar os arquivos atualizados (`index.html`, `plataforma-treino-performance.html`, `CLAUDE.md`, `MEMORY.md`, `test13.js`) pro Pablo.
 - Perguntar de novo (não assumir autorização de sessões anteriores) se ele quer que eu rode `git add`/`git commit` direto no computador dele, e nunca rodar `git push` (sem credenciais no sandbox) — sempre devolver o comando pra ele rodar.
 - Pablo confirma no celular/navegador que o Bloco 0 agora mostra os dias certos e que o mapa muscular condiz com o treino de hoje.
+
+## Sessão 3.16 — 16/09/2026 — Treino B de hoje: troca da prancha lateral, análise do Watch, decisão Bloco 0 x Bloco 1
+
+Pablo mandou 2 prints do Apple Watch da sessão de hoje (qua. 16/09, 18:57-19:30, "Full-Body B") e três pedidos: (1) trocar a prancha lateral (`b5`) por não conseguir executar com boa forma, (2) avaliar se ainda faz sentido continuar no Bloco 0 depois de já ter passado pelo treino de Condicionamento ("treino C") também, ou se já dá pra avançar pra algo mais intenso, e (3) uma análise profunda do treino de hoje.
+
+### 1) Troca da prancha lateral (`b5`)
+Mantive o `id` (`b5`, preserva histórico), o grupamento-alvo em `MUSCLE_MAP` (`abdomen`) e a meta de tempo (20-30s) — só troquei o MOVIMENTO pela versão com joelho apoiado no chão, que reduz a alavanca sem mudar o estímulo/objetivo (é a progressão regressiva padrão pra quem ainda não sustenta a prancha lateral reta com boa forma). Vídeo novo (`gnSzKBEoPGo`, canal Cloud Gym, "Prancha Lateral Joelhos Apoiados") checado no oEmbed do YouTube antes de entrar no mapa (regra 10/21) — embed permitido. Documentei o motivo da troca direto no campo `obs` do exercício (visível pro Pablo dentro do app) e como regra 21 do CLAUDE.md, incluindo o critério pra voltar a testar a versão reta (20-30s com técnica sólida nos dois lados por 1-2 semanas seguidas).
+
+### 2) Bloco 0 ainda faz sentido?
+O plano (anamnese, Sessão 1) definiu Bloco 0 = **semanas 1-2** de progressão conservadora, justamente por causa de ~1,5 anos destreinado — não é sobre "já fiz A, B e C uma vez", é sobre tempo de adaptação de tecido conjuntivo/técnica. O projeto começou em 09-10/09/2026 e a treino de hoje (16/09) é literalmente a 2ª sessão de força com dado real do Watch (a 1ª foi a Sessão 3.7, 15/09) — ou seja, estamos a menos de uma semana do início real, dentro da 1ª metade da janela de 2 semanas do Bloco 0. Recomendação: **continuar no Bloco 0 por enquanto**, não é hora de subir intensidade/RIR ainda. Dois sinais reforçam isso, não só o calendário: (a) o episódio de hoje da prancha lateral é exatamente o tipo de ajuste técnico que a fase de fundação existe pra capturar antes de aumentar carga; (b) só temos 1 sessão de cada tipo (A, B, C) com dado real até agora — vale completar pelo menos mais um ciclo A→B→C dentro da janela de 2 semanas antes de reavaliar. Reavaliar de novo por volta de 22-24/09 (fechamento das 2 semanas) — combinar isso é bom gatilho pra próxima decisão de bloco, em vez de decidir de novo por sensação a cada sessão.
+
+### 3) Análise do treino de hoje (força, Full-Body B)
+Dados do Watch: 33:28 registrados, FC média 130bpm, calorias ativas 256kcal (total 311kcal — ver Sessão 3.8, uso sempre "ativas"). Distribuição por zona: Zona 1 24:04 (72% do tempo, <142bpm) · Zona 2 5:36 (143-153) · Zona 3 3:16 (154-165) · Zona 4 0:31 (166-177) · Zona 5 0:00. Perfil típico e saudável de treino de força: a maior parte do tempo em Zona 1 é o esperado (descanso entre séries), com picos breves em Zona 2-3 durante as séries mais pesadas (RDL/puxada), Zona 4 quase inexistente (31s) e Zona 5 zerada — nada que sinalize esforço cardiovascular excessivo, consistente com o RIR 3-4 alvo do Bloco 0. Como bônus, isso também é um efeito colateral positivo pro objetivo 3 (eficiência cardiovascular) sem precisar virar treino de cardio.
+
+**Nota importante:** o Pablo esqueceu de iniciar o relógio no 1º exercício (`b1`, supino inclinado) e só ligou a partir do 2º (`b2`) — os 33:28/256kcal/130bpm cobrem só ~4 dos 5 exercícios da sessão B, então a sessão real foi mais longa e com mais gasto calórico do que os números brutos sugerem. Isso, mais a percepção dele de que a B "pareceu mais leve" que a A, provavelmente é explicado por dois fatores juntos: (1) o próprio buraco de dados do início, que faz a sessão parecer mais curta do que foi, e (2) a composição de exercícios da B (terra romeno/RDL costuma ser percebido como sistemicamente menos exaustivo que agachamento/leg press da A, mesmo em volume parecido) — não é sinal de queda de esforço real.
+
+**Valores prontos pra ele digitar na aba Análise** (não escrevo direto no Firestore, regra 17): tipo de atividade `forca`, data `2026-09-16`, duração `33` min (com a ressalva do `b1` faltando), FC média `130`, FC máxima aproximadamente `169` (baseado na escala do gráfico do Watch — pedir pra ele confirmar o valor exato se o Watch mostrar em algum outro lugar), calorias ativas `256`, zona alta ~`0.5` min (Z4+Z5 somados — praticamente irrelevante pra treino de força, é normal e não é o KPI principal aqui, ver regra 17). RPE geral fica com ele (subjetivo).
+
+### Testes
+Suíte completa (`test.js`-`test13.js`) sem regressão após a troca de `b5`/vídeo — nenhum teste checava nome/vídeo específico desse exercício. Confirmado manualmente via Playwright que a tela de Treino mostra o nome novo + nota da troca no card do `b5` da sessão B.
+
+### Pendências no fim da Sessão 3.16
+- Pablo digita os valores do Watch na aba Análise e registra a sessão B (séries/carga) na aba Treino, se ainda não tiver feito.
+- Reavaliar Bloco 0 → Bloco 1 por volta de 22-24/09 (fim da janela de 2 semanas), ou antes se a aderência/técnica pedir.
+- Acompanhar se a versão da prancha lateral com joelho apoiado sai bem nas próximas sessões B.
+- Commitar/pushar (confirmar que o push realmente aconteceu).
