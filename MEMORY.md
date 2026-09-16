@@ -520,3 +520,25 @@ Suíte completa (`test.js`-`test13.js`) sem regressão após as duas rodadas de 
 - Acompanhar se a sustentação unilateral com halter (`b5`) sai bem nas próximas sessões B, e se ele prefere um vídeo em português pra ela.
 - Acompanhar se as sessões de ~55-65 min (agora com bíceps/panturrilha) cabem na realidade do tempo dele — se não couberem, reduzir esses dois pra 1x/semana antes de cortar outra coisa.
 - Commitar/pushar (confirmar que o push realmente aconteceu).
+
+## Sessão 3.17 — 16/09/2026 — Histórico clicável (detalhe visual de sessão) + brainstorm de features visuais
+
+Pablo pediu pra poder clicar num treino do Histórico e ver o detalhe de forma visual/dinâmica (dados essenciais + gráficos/tabelas), e separadamente pediu pesquisa + ideias de features visuais pra incluir no app, com base nas referências já usadas (Strava, NTC, Peloton, Apple Fitness+, Oura, WHOOP, Hevy — Sessão 3.12) e pesquisa atual.
+
+### O que implementei: detalhe de sessão (bottom-sheet)
+Cada `.hist-item` agora é clicável (`data-session-id`) e abre um bottom-sheet (`#sessionDetailModal`, reaproveitando o padrão visual `.modal-overlay`/`.modal-box` do vídeo, variante `.modal-tall` pra rolar) com: hero de 3 números (duração em min a partir de `temposExercicio`, volume total em kg = Σ carga×reps das séries `peso_reps` concluídas, RPE geral), chips dos grupamentos musculares trabalhados naquele dia (via `MUSCLE_MAP`), contagem de séries concluídas, e por exercício as séries feitas em chips + uma barra comparativa (mesmo visual do load-bar do Treino, Sessão 3.12) só que reancorada na DATA da sessão sendo vista — "Nessa sessão" x "Sessão anterior" x "Recorde até então" — em vez de "hoje", pra não mostrar como recorde uma marca que na verdade só aconteceu depois daquela sessão específica. Duas funções novas pra isso: `melhorMarcaAteData()` e `ultimoRegistroAntesDe()` (variantes das já existentes, filtradas por data).
+
+Testado em `test14.js`: semeei uma sessão antiga (18kg no supino) e uma recente (22kg) e verifiquei que cada uma vê o histórico corretamente do seu próprio ponto no tempo (a antiga não vê o recorde "do futuro"; a recente vê a antiga como "sessão anterior"). Suíte completa (`test.js`-`test14.js`) sem regressão.
+
+### Pesquisa e ideias apresentadas ao Pablo (não implementadas ainda — ele escolhe)
+Pesquisei tendências atuais (2026) de apps de fitness/wearables além do que já tinha da Sessão 3.12, incluindo o design breakdown do WHOOP (arquitetura de divulgação progressiva em 3 camadas, vocabulário de cor estreito, tipografia com números gigantes) e a lista de features do Hevy (gráfico de distribuição de séries por grupamento muscular, página de histórico por exercício, relatório mensal). Ideias apresentadas em conversa (ver a resposta ao Pablo desta sessão pro texto completo apresentado a ele):
+1. Gráfico de volume semanal por grupamento vs meta de 12-20 séries (Pelland et al. 2025, já citado na anamnese) — o "quick win" mais alinhado com o que ele já pediu.
+2. Página de histórico por exercício (clicar no nome do exercício em vez de na sessão) — sparkline de carga ao longo do tempo + linha do tempo de recordes.
+3. Fotos de progresso lado a lado no Progresso (objetivo 1, composição corporal) — com ressalva de privacidade/armazenamento no Firestore.
+4. Extensão dos anéis de atividade com uma tendência de "carga de treino" (séries totais em janela móvel de 7 dias), inspirado no conceito de Strain do WHOOP, sem inventar métrica de recuperação que não temos dado biométrico pra sustentar.
+5. Selos/conquistas por marcos (10 treinos, 30 dias de consistência etc.), padrão gamificação Strava/Duolingo/Hevy.
+6. Calendário mensal navegável (estilo Apple Fitness/Strava) como alternativa ao heatmap de 84 dias atual.
+
+### Pendências no fim da Sessão 3.17
+- Aguardar Pablo escolher quais das 6 ideias (se alguma) ele quer que eu implemente a seguir.
+- Commitar/pushar (confirmar que o push realmente aconteceu).

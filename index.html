@@ -183,10 +183,10 @@
     background:#000;border-radius:12px;overflow:hidden;
   }
   .video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
-  #videoModalClose{
+  #videoModalClose, #sessionDetailClose{
     position:absolute;top:10px;right:14px;width:30px;height:30px;border-radius:50%;
     background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:0.95rem;font-weight:700;
-    cursor:pointer;
+    cursor:pointer;z-index:1;
   }
 
   label{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:4px;}
@@ -197,11 +197,33 @@
   }
   .field textarea{min-height:70px;resize:vertical;}
 
-  .hist-item{border-bottom:1px solid var(--border);padding:10px 0;}
+  .hist-item{border-bottom:1px solid var(--border);padding:10px 0;cursor:pointer;transition:background .15s ease;border-radius:8px;}
   .hist-item:last-child{border-bottom:none;}
+  .hist-item:active{background:var(--panel2);}
   .hist-item .row{display:flex;justify-content:space-between;font-size:0.85rem;}
   .hist-item .row b{color:var(--text);}
   .hist-item .row span{color:var(--muted);font-size:0.78rem;}
+  .hist-item .chevron{color:var(--muted);font-size:0.72rem;}
+
+  /* ---- Sessão detalhada (bottom-sheet grande, Sessão 3.17) ---- */
+  .modal-box.modal-tall{max-height:88vh;display:flex;flex-direction:column;}
+  #sessionDetailBody{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .modal-box h3.sd-title{text-align:left;margin-bottom:2px;padding-right:38px;}
+  .sd-sub{color:var(--muted);font-size:0.78rem;margin:0 0 14px;}
+  .sd-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .sd-hero-tile{background:var(--panel2);border-radius:12px;padding:10px 8px;text-align:center;}
+  .sd-hero-tile b{display:block;font-size:1.3rem;color:var(--text);line-height:1.1;}
+  .sd-hero-tile span{display:block;font-size:0.62rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.02em;}
+  .sd-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .sd-chip{display:flex;align-items:center;gap:5px;background:var(--panel2);border-radius:99px;padding:4px 10px 4px 8px;font-size:0.7rem;color:var(--text);}
+  .sd-chip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+  .sd-exercise{background:var(--panel2);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+  .sd-exercise h4{margin:0 0 6px;font-size:0.85rem;color:var(--text);}
+  .sd-sets{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  .sd-set{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:3px 8px;font-size:0.7rem;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .sd-set.ok{color:var(--text);border-color:var(--state-good);}
+  .sd-set.best{background:rgba(74,222,128,0.14);border-color:var(--state-good);color:var(--state-good);font-weight:700;}
+  .sd-obs{font-size:0.8rem;color:var(--muted);white-space:pre-wrap;margin-top:4px;}
   .badge{display:inline-block;background:rgba(255,169,77,0.16);color:var(--accent2);border-radius:6px;padding:2px 8px;font-size:0.68rem;margin-right:6px;}
   .badge.warn{background:rgba(251,191,36,0.15);color:var(--state-mid);}
   .badge.pr{background:rgba(74,222,128,0.16);color:var(--state-good);}
@@ -397,6 +419,14 @@
     <button class="wrapped-close" id="wrappedClose">✕</button>
     <div class="wrapped-scroll" id="wrappedScroll"></div>
     <div class="wrapped-dots" id="wrappedDots"></div>
+  </div>
+
+  <div class="modal-overlay" id="sessionDetailModal">
+    <div class="modal-box modal-tall">
+      <div class="sheet-handle"></div>
+      <button id="sessionDetailClose">✕</button>
+      <div id="sessionDetailBody"></div>
+    </div>
   </div>
 
   <div id="app">
@@ -886,6 +916,183 @@
   if(videoModalCloseEl) videoModalCloseEl.addEventListener("click", closeVideoModal);
   var videoModalEl = document.getElementById("videoModal");
   if(videoModalEl) videoModalEl.addEventListener("click", function(e){ if(e.target.id === "videoModal") closeVideoModal(); });
+
+  /* =========================================================
+     SESSÃO DETALHADA — bottom-sheet visual ao tocar num item do
+     Histórico (Sessão 3.17). Mostra o que já existe de mais rico sobre
+     aquele treino específico: hero de volume/duração/RPE, quais
+     grupamentos foram trabalhados naquele dia, e por exercício as
+     séries feitas com uma barrinha comparando "nessa sessão" x "sessão
+     anterior" x "recorde até aquela data" — mesma lógica visual do
+     load-bar do Treino (Sessão 3.12), só que reancorada na DATA da
+     sessão sendo vista, não em "hoje".
+     ========================================================= */
+  // Igual a melhorMarcaExercicio(), mas só considera sessões até (e
+  // incluindo) dataLimite — pra mostrar "recorde até então" de forma
+  // historicamente correta, em vez do recorde atual (que pode incluir
+  // marcas feitas DEPOIS da sessão que a pessoa está revendo).
+  function melhorMarcaAteData(exId, tipo, dataLimite){
+    var melhor = null;
+    state.sessions.forEach(function(s){
+      if(s.data > dataLimite || !s.exercicios || !s.exercicios[exId]) return;
+      s.exercicios[exId].forEach(function(r){
+        if(!r.ok) return;
+        if(tipo === "peso_tempo"){
+          if(r.segundos){ var t = parseFloat(r.segundos); if(!melhor || t > melhor) melhor = t; }
+        } else if(tipo === "cardio"){
+          // sem "melhor marca" única, mesmo motivo de melhorMarcaExercicio.
+        } else if(r.carga){
+          var c = parseFloat(r.carga);
+          if(!melhor || c > melhor) melhor = c;
+        }
+      });
+    });
+    return melhor;
+  }
+
+  // Igual a ultimoRegistroExercicio(), mas retorna o registro da sessão
+  // ANTERIOR a dataLimite (estritamente antes) — o "última vez" visto
+  // do ponto de vista de quem estava treinando naquele dia, não de hoje.
+  // state.sessions já vem ordenado desc por data (query orderBy).
+  function ultimoRegistroAntesDe(exId, tipo, dataLimite){
+    for(var i=0;i<state.sessions.length;i++){
+      var s = state.sessions[i];
+      if(s.data >= dataLimite) continue;
+      if(s.exercicios && s.exercicios[exId] && s.exercicios[exId].length){
+        var feitos, last;
+        if(tipo === "cardio"){
+          feitos = s.exercicios[exId].filter(function(r){ return r.ok && r.duracaoMin; });
+          if(feitos.length){ last = feitos[feitos.length-1]; return {data: s.data, duracaoMin: last.duracaoMin, velocidade: last.velocidade}; }
+        } else if(tipo === "peso_tempo"){
+          feitos = s.exercicios[exId].filter(function(r){ return r.ok && r.segundos; });
+          if(feitos.length){ last = feitos[feitos.length-1]; return {data: s.data, carga: last.carga, segundos: last.segundos}; }
+        } else {
+          feitos = s.exercicios[exId].filter(function(r){ return r.ok && r.carga; });
+          if(feitos.length){ last = feitos[feitos.length-1]; return {data: s.data, carga: last.carga, reps: last.reps}; }
+        }
+      }
+    }
+    return null;
+  }
+
+  function nomeExercicio(sessaoTipo, exId){
+    var tpl = PLANO.sessoes[sessaoTipo];
+    if(tpl){
+      var found = tpl.exercicios.filter(function(ex){ return ex.id === exId; })[0];
+      if(found) return found.nome;
+    }
+    return exId;
+  }
+
+  // Barrinha comparativa reaproveitando o visual do load-bar do Treino,
+  // mas com os 3 valores calculados "até a data da sessão", não "até hoje".
+  function renderSessionLoadBarHtml(exId, tipo, dataSessao, valorNaSessao){
+    if(tipo === "cardio") return "";
+    var unidade = tipo === "peso_tempo" ? "s" : "kg";
+    var anterior = ultimoRegistroAntesDe(exId, tipo, dataSessao);
+    var anteriorVal = anterior ? parseFloat(tipo === "peso_tempo" ? anterior.segundos : anterior.carga) : null;
+    var recordeVal = melhorMarcaAteData(exId, tipo, dataSessao);
+    var vals = [valorNaSessao, anteriorVal, recordeVal].filter(function(v){ return v; });
+    if(vals.length === 0) return "";
+    var max = Math.max.apply(null, vals);
+    function bar(label, val, color){
+      if(!val) return "";
+      var pct = Math.max(6, Math.round(val/max*100));
+      return '<div class="load-bar-row"><span class="load-bar-label">' + label + '</span>' +
+        '<div class="load-bar-track"><div class="load-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+        '<span class="load-bar-val">' + val + unidade + '</span></div>';
+    }
+    return '<div class="load-bar-group">' +
+      bar("Nessa sessão", valorNaSessao, "var(--accent)") +
+      bar("Sessão anterior", anteriorVal, "var(--muted)") +
+      bar("Recorde até então", recordeVal, "var(--state-good)") +
+    '</div>';
+  }
+
+  function renderSessionDetailHtml(s){
+    var totalSeries = 0, seriesFeitas = 0, volumeTotal = 0, temExercicioComCarga = false;
+    var gruposTrabalhados = {};
+    var exIds = s.exercicios ? Object.keys(s.exercicios) : [];
+    // Ordena pelos ids do PLANO daquele tipo de sessão quando existir
+    // (ex.: a1,a2,a3...), senão mantém a ordem que veio do Firestore.
+    var tpl = PLANO.sessoes[s.sessaoTipo];
+    if(tpl){
+      var ordem = tpl.exercicios.map(function(ex){ return ex.id; });
+      exIds.sort(function(a,b){ return ordem.indexOf(a) - ordem.indexOf(b); });
+    }
+
+    var exercisesHtml = exIds.map(function(exId){
+      var regs = s.exercicios[exId];
+      var tipo = tpl ? tipoExercicio((tpl.exercicios.filter(function(e){ return e.id===exId; })[0]) || {}) : (regs[0] && regs[0].segundos !== undefined ? "peso_tempo" : (regs[0] && regs[0].duracaoMin !== undefined ? "cardio" : "peso_reps"));
+      (MUSCLE_MAP[exId]||[]).forEach(function(mg){ gruposTrabalhados[mg] = true; });
+
+      var melhorDaSessao = null;
+      var setsHtml = regs.map(function(r){
+        totalSeries++;
+        if(!r.ok) return '<span class="sd-set">—</span>';
+        seriesFeitas++;
+        var label, valorComparavel = null;
+        if(tipo === "cardio"){
+          label = (r.duracaoMin||"—") + "min" + (r.velocidade ? " a " + r.velocidade + "km/h" : "");
+        } else if(tipo === "peso_tempo"){
+          var seg = parseFloat(r.segundos);
+          label = (r.segundos||"—") + "s" + (r.carga && r.carga !== "0" ? " · +" + r.carga + "kg" : "");
+          if(seg && (!melhorDaSessao || seg > melhorDaSessao)) melhorDaSessao = seg;
+        } else {
+          var carga = parseFloat(r.carga);
+          label = (r.carga||"0") + "kg × " + (r.reps||"—");
+          if(carga && (!melhorDaSessao || carga > melhorDaSessao)) melhorDaSessao = carga;
+          if(carga && r.reps){ volumeTotal += carga * parseFloat(r.reps); temExercicioComCarga = true; }
+        }
+        return '<span class="sd-set ok">' + label + '</span>';
+      }).join('');
+
+      return '<div class="sd-exercise"><h4>' + nomeExercicio(s.sessaoTipo, exId) + '</h4>' +
+        '<div class="sd-sets">' + setsHtml + '</div>' +
+        renderSessionLoadBarHtml(exId, tipo, s.data, melhorDaSessao) +
+      '</div>';
+    }).join('');
+
+    var duracaoMin = null;
+    if(s.temposExercicio){
+      var totalSeg = Object.keys(s.temposExercicio).reduce(function(acc,k){ return acc + s.temposExercicio[k]; }, 0);
+      if(totalSeg > 0) duracaoMin = Math.round(totalSeg / 60);
+    }
+
+    var chipsHtml = Object.keys(gruposTrabalhados).map(function(mg){
+      return '<span class="sd-chip"><span class="dot" style="background:' + MUSCLE_COLORS.vermelho + '"></span>' + (MUSCLE_GROUP_LABELS[mg]||mg) + '</span>';
+    }).join('');
+
+    return '<h3 class="sd-title">' + (s.nomeSessao||s.sessaoTipo) + '</h3>' +
+      '<p class="sd-sub">' + fmtDateBR(s.data) + '</p>' +
+      '<div class="sd-hero">' +
+        '<div class="sd-hero-tile"><b>' + (duracaoMin ? duracaoMin : "—") + '</b><span>Min</span></div>' +
+        '<div class="sd-hero-tile"><b>' + (temExercicioComCarga ? Math.round(volumeTotal).toLocaleString("pt-BR") : "—") + '</b><span>Volume (kg)</span></div>' +
+        '<div class="sd-hero-tile"><b>' + (s.rpeGeral||"—") + '</b><span>RPE</span></div>' +
+      '</div>' +
+      (chipsHtml ? '<div class="sd-chips">' + chipsHtml + '</div>' : '') +
+      '<p class="sub">' + seriesFeitas + '/' + totalSeries + ' séries concluídas</p>' +
+      exercisesHtml +
+      (s.observacoes ? '<div class="sd-exercise"><h4>Observações</h4><p class="sd-obs">' + s.observacoes + '</p></div>' : '');
+  }
+
+  function openSessionDetail(sessionId){
+    var s = state.sessions.filter(function(x){ return x._id === sessionId; })[0];
+    if(!s) return;
+    document.getElementById("sessionDetailBody").innerHTML = renderSessionDetailHtml(s);
+    var modal = document.getElementById("sessionDetailModal");
+    if(modal) modal.classList.add("show");
+  }
+
+  function closeSessionDetail(){
+    var modal = document.getElementById("sessionDetailModal");
+    if(modal) modal.classList.remove("show");
+  }
+
+  var sessionDetailCloseEl = document.getElementById("sessionDetailClose");
+  if(sessionDetailCloseEl) sessionDetailCloseEl.addEventListener("click", closeSessionDetail);
+  var sessionDetailEl = document.getElementById("sessionDetailModal");
+  if(sessionDetailEl) sessionDetailEl.addEventListener("click", function(e){ if(e.target.id === "sessionDetailModal") closeSessionDetail(); });
 
   /* =========================================================
      NAV
@@ -1740,7 +1947,7 @@
       el.innerHTML = '<div class="panel"><p class="empty">Nenhum treino registrado ainda.</p></div>';
       return;
     }
-    var html = '<div class="panel"><h2>Treinos realizados</h2>';
+    var html = '<div class="panel"><h2>Treinos realizados</h2><p class="sub">Toque num treino pra ver os detalhes.</p>';
     state.sessions.forEach(function(s){
       var totalSeries = 0, seriesFeitas = 0;
       if(s.exercicios){
@@ -1748,14 +1955,17 @@
           s.exercicios[k].forEach(function(r){ totalSeries++; if(r.ok) seriesFeitas++; });
         });
       }
-      html += '<div class="hist-item"><div class="row"><b>' + fmtDateBR(s.data) + ' · ' + (s.nomeSessao||s.sessaoTipo) + '</b>' +
+      html += '<div class="hist-item" data-session-id="' + s._id + '"><div class="row"><b>' + fmtDateBR(s.data) + ' · ' + (s.nomeSessao||s.sessaoTipo) + '</b>' +
         '<span>RPE ' + (s.rpeGeral||"—") + '</span></div>' +
         '<div class="row"><span>' + seriesFeitas + '/' + totalSeries + ' séries concluídas</span>' +
-        (s.observacoes ? '<span>' + s.observacoes.slice(0,40) + (s.observacoes.length>40?'…':'') + '</span>' : '<span></span>') +
+        '<span class="chevron">' + (s.observacoes ? s.observacoes.slice(0,28) + (s.observacoes.length>28?'…':'') + ' · ' : '') + 'ver detalhes ›</span>' +
         '</div></div>';
     });
     html += '</div>';
     el.innerHTML = html;
+    el.querySelectorAll(".hist-item").forEach(function(item){
+      item.addEventListener("click", function(){ openSessionDetail(item.getAttribute("data-session-id")); });
+    });
   }
 
   /* =========================================================
