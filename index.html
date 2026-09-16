@@ -464,11 +464,15 @@
     a3: "-m8lrJsuHBk",
     a4: "fUqCp4WNKeM",
     a5: "XqPlCDe37lA",
+    a6: "BZJZTi6WvlU",
+    a7: "S9kJU_vhzfo",
     b1: "eBT3llJhxU8",
     b2: "y8hwkR2Puwg",
     b3: "OE6ulD2F-dc",
     b4: "NOuC7mAOt-A",
-    b5: "gnSzKBEoPGo"
+    b5: "WC3YEU59uVg",
+    b6: "1LpnsHK6uMw",
+    b7: "S9kJU_vhzfo"
   };
 
   // Grupamento muscular principal trabalhado por cada exercício do plano
@@ -480,11 +484,15 @@
     a3: ["quadriceps", "gluteos"],
     a4: ["ombros", "triceps"],
     a5: ["abdomen"],
+    a6: ["biceps"],
+    a7: ["panturrilha"],
     b1: ["peito", "triceps"],
     b2: ["costas"],
     b3: ["posterior_coxa", "gluteos"],
     b4: ["ombros"],
-    b5: ["abdomen"]
+    b5: ["abdomen"],
+    b6: ["biceps"],
+    b7: ["panturrilha"]
   };
 
   // Todos os grupamentos rastreados. Cada um tem forma própria desenhada na
@@ -510,25 +518,29 @@
       A: {
         nome: "Full-Body A",
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
-        duracaoEstimada: "50-55 min",
+        duracaoEstimada: "55-65 min",
         exercicios: [
           {id:"a1", nome:"Supino reto (barra ou halteres)", series:3, reps:"8-12", rir:"3-4", obs:"Priorize técnica sobre carga nesta fase."},
           {id:"a2", nome:"Remada curvada ou remada máquina", series:3, reps:"8-12", rir:"3-4", obs:""},
           {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"3-4", obs:"Amplitude confortável, sem dor articular."},
           {id:"a4", nome:"Desenvolvimento de ombro (halteres/máquina)", series:2, reps:"10-12", rir:"3-4", obs:""},
-          {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", tipo:"peso_tempo", obs:"Peso corporal (0kg) por padrão — só mude 'peso extra' se usar sobrecarga."}
+          {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", tipo:"peso_tempo", obs:"Peso corporal (0kg) por padrão — só mude 'peso extra' se usar sobrecarga."},
+          {id:"a6", nome:"Rosca direta (barra ou halteres)", series:2, reps:"10-12", rir:"3-4", obs:"Adicionado em 16/09/2026: bíceps não tinha nenhum exercício direto no plano (só estímulo indireto de remada/puxada) — ver regra 22 do CLAUDE.md."},
+          {id:"a7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 16/09/2026: panturrilha não tinha nenhum exercício no plano. Foco na amplitude completa (descer até alongar bem, subir até a ponta do pé) — ver regra 22 do CLAUDE.md."}
         ]
       },
       B: {
         nome: "Full-Body B",
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
-        duracaoEstimada: "50-55 min",
+        duracaoEstimada: "55-65 min",
         exercicios: [
           {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"3-4", obs:"Grupamento que você mais gosta — aproveite."},
           {id:"b2", nome:"Puxada frontal ou remada unilateral", series:3, reps:"8-12", rir:"3-4", obs:""},
           {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"3-4", obs:""},
           {id:"b4", nome:"Elevação lateral", series:2, reps:"12-15", rir:"3-4", obs:""},
-          {id:"b5", nome:"Prancha lateral com joelho apoiado (cada lado)", series:2, reps:"20-30s", rir:"—", tipo:"peso_tempo", obs:"Trocado em 16/09/2026: a prancha lateral tradicional (reta, apoio só no pé) não saiu com boa execução — essa versão com o joelho no chão reduz a alavanca e mantém o mesmo alvo (oblíquos/estabilidade lateral do tronco). Peso corporal (0kg) por padrão. Quando conseguir os 20-30s com técnica sólida em ambos os lados por 1-2 semanas seguidas, pode voltar a testar a versão reta."}
+          {id:"b5", nome:"Sustentação unilateral com halter em pé (cada lado)", series:2, reps:"20-30s", rir:"—", tipo:"peso_tempo", obs:"Trocado em 16/09/2026 (2ª troca — a versão com joelho apoiado ainda era prancha lateral, e o pedido era um exercício DIFERENTE, não uma variação mais fácil da mesma). Segure um halter numa mão, em pé, tronco ereto — o oblíquo do lado SEM peso trabalha isometricamente pra evitar que o tronco incline pro lado do halter. Mesmo alvo da prancha lateral (oblíquos/estabilidade lateral), sem exigir apoio no punho nem equilíbrio no chão. Troque de lado a cada série. Vídeo em inglês (não achei um tutorial em português específico pra esse exercício) mas a execução é simples de acompanhar só olhando — avise se preferir que eu procure outra opção."},
+          {id:"b6", nome:"Rosca alternada (halteres)", series:2, reps:"10-12", rir:"3-4", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md — variação de pegada em relação à rosca direta da sessão A, mesmo grupamento (bíceps)."},
+          {id:"b7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md."}
         ]
       },
       COND: {
