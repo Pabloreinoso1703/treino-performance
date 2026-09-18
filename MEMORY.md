@@ -590,3 +590,23 @@ O script Python original de segmentação (das versões v4-v6 do mapa muscular, 
 - Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo (nunca assumir autorização de sessões anteriores) se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele — devolver o `git push` pra ele rodar, sem credenciais no sandbox pra isso.
 - Pablo conferir visualmente o antebraço no mapa muscular no celular/navegador dele e testar os dois exercícios novos (`a8`/`b8`) na próxima sessão de força.
 - Se ele quiser, no futuro dá pra considerar grupamento/exercício dedicado de lombar ou adutores/abdutores — hoje ficam de fora por simplificação (documentado, não erro).
+
+## Sessão 3.20 — 18/09/2026 — Correção do contorno do antebraço (feedback direto do Pablo)
+
+Pablo conferiu o antebraço entregue na 3.19 e apontou que o contorno não seguia bem os músculos conforme a imagem: "Não achei que delimitou bem os músculos do antebraço conforme a imagem... Quero que reveja e delimite exatamente o contorno dos músculos a serem trabalhados. Revise os do antebraço e posteriormente revise todos os músculos do mapa muscular." Pedido em duas etapas explícitas: antebraço primeiro, depois (numa próxima sessão) todos os outros grupamentos.
+
+### O que estava errado
+O método da 3.19 (varredura linha a linha limitada por um y fixo, estimado a partir do bbox de bíceps/tríceps) fazia as bordas esquerda/direita seguirem bem a silhueta real do braço, mas o TOPO (limite com bíceps/tríceps no cotovelo) saía como um corte reto — ignorando a curva/reentrância que a ilustração desenha ali (a "prega" do cotovelo, onde ficam visíveis os tendões/relevo do bíceps encontrando o antebraço). Visualmente ficava óbvio comparado à imagem original: um retângulo com fundo arredondado, não um contorno anatômico.
+
+### Correção
+Decodifiquei de novo as duas fotos-base (`MUSCLE_PHOTO_FRONT`/`MUSCLE_PHOTO_BACK`) pra PNG e gerei recortes com grade de coordenadas (passo 2-5px, ampliados 6-10x) bem de perto de cada um dos 4 cotovelos (frente-esquerda/direita, costas-esquerda/direita). Tracei manualmente, ponto a ponto, a curva real desenhada em cada um, testando cada candidato com um overlay semi-transparente redesenhado sobre a foto original (pra ver se batia com a linha de fato, não só "parecia razoável") e conferindo que não sobrepunha as formas já existentes de bíceps/tríceps (que em alguns pontos já chegam bem perto do cotovelo, principalmente nas costas). A base (pulso) já estava razoável na 3.19 e não precisou de mudança relevante. Resultado final conferido com screenshot do app de verdade renderizado (Dashboard, mapa muscular frente e costas) antes de fechar — não só o recorte isolado.
+
+Atualizei `FRONT_PATHS.antebraco` e `BACK_PATHS.antebraco` com as novas coordenadas (mesma estrutura de 2 formas por vista, uma por braço). Documentado como atualização da regra 26 do CLAUDE.md, com a lição geral: corte reto nunca serve pra um limite que é uma curva desenhada na imagem, mesmo que o resultado fique "dentro" da silhueta geral — é preciso ler pixel a pixel.
+
+### Testes
+Rodei a suíte inteira (`test.js`-`test20.js`) sem alteração nenhuma no código de teste — passou tudo (`test20.js` só valida existência/clicabilidade/estrutura das 4 formas e o fluxo exercício→mapa, não coordenadas exatas, então continua válido com o novo contorno).
+
+### Pendências no fim da Sessão 3.20
+- Sincronizar `plataforma-treino-performance.html` com o `index.html`, entregar os arquivos e perguntar de novo (nunca assumir autorização de sessões anteriores) se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele.
+- Pablo conferir visualmente se o novo contorno do antebraço agora bate com a expectativa dele.
+- Próximo passo já combinado: revisar os demais grupamentos do mapa muscular (ombros, peito, bíceps, tríceps, abdômen, costas, glúteos, quadríceps, posterior de coxa, panturrilha) com o mesmo padrão de verificação pixel a pixel — ainda não iniciado, fica pra quando ele pedir.
