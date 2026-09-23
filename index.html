@@ -2806,6 +2806,12 @@
           '<div class="row"><span>' + (w.duracao?w.duracao+"min":"") + (w.distancia?" · "+w.distancia+"km":"") + (w.ritmo?" · "+w.ritmo:"") + (w.fcMedia?" · FC méd "+w.fcMedia:"") + (w.fcMax?" (máx "+w.fcMax+")":"") + '</span>' +
           '<span>' + (w.zona12 ? w.zona12+"min em zona 1-2" : "") + (w.zonaAlta ? (w.zona12?" · ":"") + w.zonaAlta+"min em zona 4-5" : "") + '</span></div>' +
           (w.observacoes ? '<div class="row"><span>' + w.observacoes + '</span></div>' : '') +
+          // Sessão 3.25: edição de registro do Apple Watch já salvo — mesmo
+          // motivo da edição de sessão (regra 23): campo novo (zona12) não
+          // existia antes, então um registro antigo/de hoje pode precisar
+          // ganhar esse valor depois de já salvo, e eu não tenho acesso
+          // direto ao Firestore de produção pra fazer isso por ele.
+          '<div class="row"><button type="button" class="btn small secondary" data-watch-edit="' + w._id + '">✏️ Editar esse registro</button></div>' +
         '</details>';
       });
     }
@@ -2841,6 +2847,90 @@
       };
       db.collection(COL.watch).add(doc).then(function(){ loadAll(); setTab("analise"); })
         .catch(function(err){ console.error(err); showToast("Não foi possível salvar agora.", true); });
+    });
+    document.querySelectorAll("[data-watch-edit]").forEach(function(btn){
+      btn.addEventListener("click", function(){ openWatchEdit(btn.getAttribute("data-watch-edit")); });
+    });
+  }
+
+  // Sessão 3.25: edição de um registro já salvo do Apple Watch (COL.watch),
+  // mesmo padrão da edição de sessão passada (regra 23) — motivada dessa vez
+  // por um campo novo (zona12) que não existia quando registros antigos
+  // foram salvos. Substitui o conteúdo inteiro da aba Análise por um
+  // formulário só daquele registro; "Cancelar"/"Salvar correção" voltam a
+  // chamar renderAnalise() (que já refaz o formulário de registro novo +
+  // lista atualizada), então não precisa de nenhum estado de UI extra pra
+  // sair do modo edição.
+  function renderWatchEditFormHtml(w){
+    var tipoLabel = TIPOS_ATIVIDADE[w.tipoAtividade] || "";
+    var html = '<div class="panel">' +
+      '<h2>Editar registro do Apple Watch</h2>' +
+      '<p class="sub">' + fmtDateBR(w.data) + (tipoLabel ? ' · ' + tipoLabel : '') + '</p>' +
+      '<p class="note">Corrija ou complete valores desse registro (ex.: campo que não existia quando você salvou, como "zona 1-2"). Não muda a data nem o tipo de atividade — só os números.</p>' +
+      '<label class="field-check"><input type="checkbox" id="weSemWatch"' + (w.semWatch ? ' checked' : '') + '> Sem dados do Apple Watch nessa sessão</label>' +
+      '<div id="weCamposWatch">' +
+      '<div class="field"><label>Distância (km, se aplicável)</label><input type="number" step="0.01" id="weDistancia" value="' + (w.distancia||'') + '"></div>' +
+      '<div class="field"><label>Ritmo médio (min/km, se corrida)</label><input type="text" placeholder="Ex: 7min40s/km" id="weRitmo" value="' + (w.ritmo||'') + '"></div>' +
+      '<div class="field"><label>FC média (bpm)</label><input type="number" id="weFcMedia" value="' + (w.fcMedia||'') + '"></div>' +
+      '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="weFcMax" value="' + (w.fcMax||'') + '"></div>' +
+      '<div class="field"><label>Minutos em zona 1-2 (base aeróbica — o alvo do plano atual, ver Análise)</label><input type="number" step="0.1" id="weZona12" value="' + (w.zona12||'') + '"></div>' +
+      '<div class="field"><label>Minutos em zona 4-5 (intensidade alta — verificação, não a meta principal agora)</label><input type="number" step="0.1" id="weZonaAlta" value="' + (w.zonaAlta||'') + '"></div>' +
+      '<div class="field"><label>Calorias ativas (kcal)</label><input type="number" id="weCalorias" value="' + (w.calorias||'') + '"></div>' +
+      '</div>' +
+      '<div class="field"><label>Duração (min)</label><input type="number" id="weDuracao" value="' + (w.duracao||'') + '"></div>' +
+      '<div class="field"><label>RPE/Esforço desse treino (1-10)</label><input type="number" min="1" max="10" id="weRpe" value="' + (w.rpe||'') + '"></div>' +
+      '<div class="field"><label>Sono da noite anterior (horas aprox.)</label><input type="number" step="0.5" id="weSono" value="' + (w.sono||'') + '"></div>' +
+      '<div class="field"><label>Sensação de recuperação/fadiga</label><textarea id="weObs" placeholder="Ex: senti mais cansado que o normal, dor leve no ombro, etc.">' + (w.observacoes||'') + '</textarea></div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;">' +
+        '<button class="btn" id="btnSalvarEdicaoWatch">Salvar correção</button>' +
+        '<button class="btn secondary" id="btnCancelarEdicaoWatch">Cancelar</button>' +
+      '</div>' +
+      '</div>';
+    return html;
+  }
+
+  function openWatchEdit(watchId){
+    var w = state.watch.filter(function(x){ return x._id === watchId; })[0];
+    if(!w) return;
+    var el = document.getElementById("view-analise");
+    el.innerHTML = renderWatchEditFormHtml(w);
+    var semWatchEl = document.getElementById("weSemWatch");
+    var camposWatchEl = document.getElementById("weCamposWatch");
+    camposWatchEl.style.display = semWatchEl.checked ? "none" : "";
+    semWatchEl.addEventListener("change", function(){
+      camposWatchEl.style.display = semWatchEl.checked ? "none" : "";
+    });
+    document.getElementById("btnCancelarEdicaoWatch").addEventListener("click", function(){ renderAnalise(); });
+    document.getElementById("btnSalvarEdicaoWatch").addEventListener("click", function(){ saveWatchEdit(watchId); });
+  }
+
+  function saveWatchEdit(watchId){
+    var semWatch = document.getElementById("weSemWatch").checked;
+    var partial = {
+      duracao: document.getElementById("weDuracao").value,
+      distancia: semWatch ? "" : document.getElementById("weDistancia").value,
+      ritmo: semWatch ? "" : document.getElementById("weRitmo").value,
+      fcMedia: semWatch ? "" : document.getElementById("weFcMedia").value,
+      fcMax: semWatch ? "" : document.getElementById("weFcMax").value,
+      zona12: semWatch ? "" : document.getElementById("weZona12").value,
+      zonaAlta: semWatch ? "" : document.getElementById("weZonaAlta").value,
+      calorias: semWatch ? "" : document.getElementById("weCalorias").value,
+      rpe: document.getElementById("weRpe").value,
+      sono: document.getElementById("weSono").value,
+      observacoes: document.getElementById("weObs").value,
+      semWatch: semWatch
+    };
+    var btn = document.getElementById("btnSalvarEdicaoWatch");
+    if(btn){ btn.disabled = true; btn.textContent = "Salvando..."; }
+    db.collection(COL.watch).doc(watchId).update(partial).then(function(){
+      showToast("Registro do Apple Watch corrigido.");
+      return loadAll();
+    }).then(function(){
+      renderAnalise();
+    }).catch(function(err){
+      console.error(err);
+      showToast("Não foi possível salvar a correção agora.", true);
+      if(btn){ btn.disabled = false; btn.textContent = "Salvar correção"; }
     });
   }
 
