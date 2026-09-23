@@ -736,3 +736,31 @@ Rodei a suíte completa (`test.js`-`test23.js`, agora 24 arquivos de teste) — 
 - **Aguardando o Pablo:** reenviar os prints do Watch do treino C (condicionamento), se ele de fato treinou isso hoje além da força — sem esse dado não dá pra completar a análise combinada "A e C" que ele pediu.
 - Pablo usar o "Editar esse registro" novo pra completar o registro de hoje da sessão de força com os valores de zona calculados acima (37,3min zona 1-2 / 3,85min zona 4-5), se quiser ter esse dado salvo (não é essencial já que treino de força fica fora dos gráficos de zona, mas fica disponível pra consulta).
 - Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.
+
+
+## Sessão 3.25.1 — 23/09/2026 — Análise combinada dos dois treinos de hoje (A força + C condicionamento)
+
+Pablo mandou os 4 prints do treino C (Corrida Interna, esteira) que faltavam e pediu pra avaliar os dois treinos de hoje juntos.
+
+### Dados do treino C (Corrida Interna/esteira, 14:40-15:10)
+30min01s, 2,77km, ritmo médio 10'50"/km, cadência média 112ppm, FC média 147bpm (faixa observada 126-166bpm), esforço percebido reportado pelo próprio Watch: **5/10 "Moderado"**, calorias ativas 293 / totais 344. Zonas de FC: Zona 1 = 2:12, **Zona 2 = 24:59**, Zona 3 = 2:41, Zona 4 = 0:09, Zona 5 = 0:00. Parciais por km bem consistentes (11:00/10'45/10'40" por km, 147-149bpm em todos) — sem deriva de ritmo nem de FC ao longo da sessão, sinal de esforço bem controlado, não "começou forte e desabou".
+
+**Valores prontos pra digitar no registro do Watch (novo ou editando um já existente):** duração 30min · distância 2,77km · ritmo "10min50s/km" · FC média 147 · FC máxima 166 · zona 1-2 = Zona1+Zona2 = 2:12+24:59 = 27min11s ≈ **27,2min** · zona 4-5 = Zona4+Zona5 = 0:09+0:00 = 9s ≈ **0,15min** · calorias ativas 293 · RPE 5 (o próprio Watch já rotulou como "Moderado", bate com o RPE reportado).
+
+### Leitura à luz dos objetivos — o treino C foi a melhor execução registrada até agora do objetivo 2
+83% do tempo (25 dos 30 min) em zona 2, praticamente zero em zona alta (9 segundos em zona 4, nada em zona 5) — exatamente o que a prescrição do `c1` pede ("fique a maior parte do tempo abaixo de ~153bpm, zona 1-2"). Contraste direto com a referência negativa já documentada no próprio `obs` do `c1`: o teste de 15/09 a 9km/h tinha colocado ele 8 dos 10 min em zona 5 (pico 195bpm) — muito mais intenso que o alvo. A diferença aqui foi o ritmo bem mais lento (10'50"/km, entre caminhada rápida e trote leve, vs. 9km/h que é corrida de verdade) — confirma na prática o que a regra já dizia: "deixe a FC guiar, não o km/h".
+
+**Atualizei o campo `obs` do exercício `c1` no `PLANO`** (dentro do `index.html`) acrescentando essa calibração positiva como referência de ritmo pra ele continuar usando enquanto o objetivo for base aeróbica — fica visível direto no app, na tela de Treino, não só aqui no MEMORY.md. Isso é avaliação/ajuste de plano com base em achado real, já pré-autorizado pela regra 5 (não preciso perguntar de novo toda vez que um print do Watch pedir um ajuste desses).
+
+Sobre objetivo 3 (FC mais eficiente pro mesmo esforço): ainda não dá pra comparar tendência real — esse é o primeiro registro de corrida/caminhada com ritmo nessa faixa (~10-11min/km) que tenho visibilidade; treinos anteriores de corrida citados no app (ex. o teste de 15/09) foram num ritmo bem mais rápido (9km/h ≈ 6'40"/km), então não são comparáveis entre si por causa do esforço diferente (regra 17: "só é comparável entre sessões de ritmo/esforço parecido"). A partir de hoje, esse registro (147bpm médio a 10'50"/km) vira a referência-base — próximas sessões num ritmo parecido é que vão mostrar se a FC pro mesmo esforço está caindo (melhora de eficiência) com o tempo.
+
+### Treino A (força) + Treino C (condicionamento) juntos, no dia
+80 minutos de treino no total (50min força + 30min corrida), 743kcal ativas somadas (450+293), RPE 6 na força e 5 no condicionamento — carga de treino bem distribuída no dia, sem sinal de sobrecarga aparente nos dois RPEs relativamente moderados. Volume de treino concorrente (força + cardio no mesmo dia) já é sabidamente sem interferência relevante na força/hipertrofia (ver Metodologia de treino vigente no CLAUDE.md) — nada a ajustar na estrutura por causa disso.
+
+### Testes
+Rodei a suíte completa de novo depois de editar o `obs` do `c1` (só mudança de texto, sem lógica nova) — sem regressão, `ERRORS: []` em todos exceto os warnings de "permissions policy" já conhecidos em `test.js`/`test2.js`.
+
+### Pendências no fim da Sessão 3.25.1
+- Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele.
+- Pablo digitar os dois registros do Watch de hoje (força já tinha, falta completar com zona12/zonaAlta calculados na Sessão 3.25; condicionamento é registro novo, valores prontos acima) usando a função de editar/criar registro.
+- Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.
