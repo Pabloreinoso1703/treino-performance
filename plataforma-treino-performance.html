@@ -722,7 +722,11 @@
      DATA LAYER
      ========================================================= */
   function loadAll(){
-    Promise.all([
+    // Sessão 3.24: retorna a Promise (antes não retornava) pra quem chama
+    // loadAll() poder encadear um .then() depois de um refresh — usado pela
+    // edição de sessão passada (saveSessionEdit) pra reabrir o detalhe já
+    // com o dado corrigido, sem precisar de um segundo recarregamento manual.
+    return Promise.all([
       db.collection(COL.sessions).orderBy("data","desc").limit(60).get(),
       db.collection(COL.watch).orderBy("data","desc").limit(30).get(),
       db.collection(COL.subjective).orderBy("data","desc").limit(30).get(),
@@ -1128,8 +1132,17 @@
       return '<span class="sd-chip"><span class="dot" style="background:' + MUSCLE_COLORS.vermelho + '"></span>' + (MUSCLE_GROUP_LABELS[mg]||mg) + '</span>';
     }).join('');
 
+    // Sessão 3.24: botão "Editar valores" — corrige um erro de digitação numa
+    // sessão passada (ex.: carga total digitada em vez de carga por lado no
+    // primeiríssimo registro de um exercício, poluindo recorde/última vez
+    // dali pra frente) sem precisar de acesso direto ao Firestore de
+    // produção (que eu não tenho, regra 5/17). Só aparece quando a sessão
+    // tem pelo menos um exercício de carga/reps, tempo ou cardio registrado.
+    var editBtnHtml = (s.exercicios && Object.keys(s.exercicios).length) ?
+      '<button type="button" class="btn small secondary" id="btnEditSessionValues" data-session-id="' + s._id + '" style="margin:6px 0 4px;">✏️ Editar valores dessa sessão</button>' : '';
     return '<h3 class="sd-title">' + (s.nomeSessao||s.sessaoTipo) + '</h3>' +
       '<p class="sd-sub">' + fmtDateBR(s.data) + '</p>' +
+      editBtnHtml +
       '<div class="sd-hero">' +
         '<div class="sd-hero-tile"><b>' + (duracaoMin ? duracaoMin : "—") + '</b><span>Min</span></div>' +
         '<div class="sd-hero-tile"><b>' + (temExercicioComCarga ? Math.round(volumeTotal).toLocaleString("pt-BR") : "—") + '</b><span>Volume (kg)</span></div>' +
@@ -1149,6 +1162,8 @@
     body.querySelectorAll("[data-ex-hist]").forEach(function(btn){
       btn.addEventListener("click", function(){ openExerciseHistory(btn.getAttribute("data-ex-hist")); });
     });
+    var editBtn = body.querySelector("#btnEditSessionValues");
+    if(editBtn) editBtn.addEventListener("click", function(){ openSessionEdit(sessionId); });
     var modal = document.getElementById("sessionDetailModal");
     if(modal) modal.classList.add("show");
   }
@@ -1156,6 +1171,87 @@
   function closeSessionDetail(){
     var modal = document.getElementById("sessionDetailModal");
     if(modal) modal.classList.remove("show");
+  }
+
+  // =========================================================
+  // Edição de sessão passada (Sessão 3.24) — corrige valores digitados
+  // errado numa sessão já salva (ex.: carga total em vez de carga por
+  // lado). Só mexe nos números das séries já existentes (carga/reps/
+  // segundos/duracaoMin/velocidade) — não adiciona/remove série nem
+  // exercício, e não mexe no "ok" (se a série foi feita ou não), que
+  // continua vindo do registro original. Ver regra 5/17: eu não tenho
+  // acesso direto ao Firestore de produção do Pablo a partir daqui, então
+  // essa é a forma dele corrigir um erro de digitação sozinho, sem precisar
+  // mexer no console do Firebase.
+  function renderSessionEditFormHtml(s){
+    var exIds = s.exercicios ? Object.keys(s.exercicios) : [];
+    var tpl = PLANO.sessoes[s.sessaoTipo];
+    if(tpl){
+      var ordem = tpl.exercicios.map(function(ex){ return ex.id; });
+      exIds.sort(function(a,b){ return ordem.indexOf(a) - ordem.indexOf(b); });
+    }
+    var html = '<h3 class="sd-title">Editar — ' + (s.nomeSessao||s.sessaoTipo) + '</h3>' +
+      '<p class="sd-sub">' + fmtDateBR(s.data) + '</p>' +
+      '<p class="note">Corrija só o que foi digitado errado na hora (ex.: peso total em vez de peso por lado). Recorde e "última vez" desse exercício recalculam sozinhos a partir do valor novo — não precisa mexer em mais nada.</p>';
+    exIds.forEach(function(exId){
+      var regs = s.exercicios[exId];
+      var exDef = tpl ? (tpl.exercicios.filter(function(e){ return e.id===exId; })[0]) : null;
+      var tipo = exDef ? tipoExercicio(exDef) : (regs[0] && regs[0].segundos !== undefined ? "peso_tempo" : (regs[0] && regs[0].duracaoMin !== undefined ? "cardio" : "peso_reps"));
+      html += '<div class="sd-exercise"><h4>' + nomeExercicio(s.sessaoTipo, exId) + '</h4>';
+      regs.forEach(function(r, i){
+        if(tipo === "cardio"){
+          html += '<div class="field"><label>Série ' + (i+1) + ' — Duração (min)</label><input type="number" inputmode="decimal" step="1" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="duracaoMin" value="' + (r.duracaoMin||'') + '"></div>' +
+            '<div class="field"><label>Série ' + (i+1) + ' — Velocidade (km/h)</label><input type="number" inputmode="decimal" step="0.1" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="velocidade" value="' + (r.velocidade||'') + '"></div>';
+        } else if(tipo === "peso_tempo"){
+          html += '<div class="field"><label>Série ' + (i+1) + ' — Peso extra (kg)</label><input type="number" inputmode="decimal" step="0.5" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="carga" value="' + (r.carga||'') + '"></div>' +
+            '<div class="field"><label>Série ' + (i+1) + ' — Segundos</label><input type="number" inputmode="numeric" step="1" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="segundos" value="' + (r.segundos||'') + '"></div>';
+        } else {
+          html += '<div class="field"><label>Série ' + (i+1) + ' — Carga (kg)</label><input type="number" inputmode="decimal" step="0.5" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="carga" value="' + (r.carga||'') + '"></div>' +
+            '<div class="field"><label>Série ' + (i+1) + ' — Reps</label><input type="number" inputmode="numeric" step="1" data-edit-ex="' + exId + '" data-edit-i="' + i + '" data-edit-f="reps" value="' + (r.reps||'') + '"></div>';
+        }
+      });
+      html += '</div>';
+    });
+    html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
+      '<button class="btn" id="btnSalvarEdicaoSessao">Salvar correção</button>' +
+      '<button class="btn secondary" id="btnCancelarEdicaoSessao">Cancelar</button>' +
+    '</div>';
+    return html;
+  }
+
+  function openSessionEdit(sessionId){
+    var s = state.sessions.filter(function(x){ return x._id === sessionId; })[0];
+    if(!s) return;
+    var body = document.getElementById("sessionDetailBody");
+    body.innerHTML = renderSessionEditFormHtml(s);
+    document.getElementById("btnCancelarEdicaoSessao").addEventListener("click", function(){ openSessionDetail(sessionId); });
+    document.getElementById("btnSalvarEdicaoSessao").addEventListener("click", function(){ saveSessionEdit(sessionId); });
+  }
+
+  function saveSessionEdit(sessionId){
+    var s = state.sessions.filter(function(x){ return x._id === sessionId; })[0];
+    if(!s) return;
+    // Clona fundo (não muta state.sessions direto — só depois que o Firestore
+    // confirmar o write é que loadAll() recarrega o state de verdade).
+    var novoExercicios = JSON.parse(JSON.stringify(s.exercicios));
+    document.querySelectorAll("[data-edit-ex]").forEach(function(inp){
+      var exId = inp.getAttribute("data-edit-ex");
+      var i = parseInt(inp.getAttribute("data-edit-i"), 10);
+      var f = inp.getAttribute("data-edit-f");
+      if(novoExercicios[exId] && novoExercicios[exId][i]) novoExercicios[exId][i][f] = inp.value;
+    });
+    var btn = document.getElementById("btnSalvarEdicaoSessao");
+    if(btn){ btn.disabled = true; btn.textContent = "Salvando..."; }
+    db.collection(COL.sessions).doc(sessionId).update({exercicios: novoExercicios}).then(function(){
+      showToast("Sessão corrigida.");
+      return loadAll();
+    }).then(function(){
+      openSessionDetail(sessionId);
+    }).catch(function(err){
+      console.error(err);
+      showToast("Não foi possível salvar a correção agora.", true);
+      if(btn){ btn.disabled = false; btn.textContent = "Salvar correção"; }
+    });
   }
 
   var sessionDetailCloseEl = document.getElementById("sessionDetailClose");
@@ -2488,23 +2584,37 @@
       .map(function(s){ return {v: parseFloat(s.rpeGeral), data: s.data}; });
     html += '<div class="panel"><h2>RPE por sessão</h2>' + sparkline(rpes, "var(--data-3)") + '</div>';
 
-    // FC média em cardio/corrida ao longo do tempo (objetivo 3: FC menor pro
-    // mesmo esforço) e minutos em zona alta (Z4+Z5) — proxy mais direto de
-    // "quanto do esforço foi quase-máximo", já que a FC média sozinha mistura
-    // trechos leves e pesados da mesma sessão.
+    // Sessão 3.24 — reordenado por importância real pros objetivos atuais.
+    // "Zona 1-2" vem PRIMEIRO agora: é o alvo direto da prescrição vigente
+    // do c1 ("fique a maior parte do tempo abaixo de ~153bpm, zona 1-2" —
+    // ver PLANO.sessoes.COND) e o que constrói base aeróbica de verdade
+    // (objetivo 2 da anamnese), quanto MAIS tempo aqui melhor. "Zona alta"
+    // (Z4+Z5) passa a ser verificação secundária, não a meta principal do
+    // bloco atual — ainda útil (confirma que ele não está treinando mais
+    // intenso do que o prescrito, e vira relevante de novo se/quando o
+    // plano entrar num bloco com trabalho específico de intensidade) mas
+    // não é o proxy certo de "condicionamento melhorando" nesse momento.
+    // FC média continua relevante pro objetivo 3 (FC menor pro mesmo
+    // esforço), mas só é comparável de verdade se ritmo/esforço também
+    // forem parecidos entre as sessões comparadas — vale trazer isso pra
+    // conversa (regra 5), não só olhar a linha isolada.
     var cardioRegs = state.watch.slice().reverse().filter(function(w){ return TIPOS_ENDURANCE.indexOf(w.tipoAtividade) !== -1; });
     var cardioSemWatch = cardioRegs.filter(function(w){ return w.semWatch; }).length;
     var fcCardio = cardioRegs.filter(function(w){ return w.fcMedia; }).map(function(w){ return {v: parseFloat(w.fcMedia), data: w.data}; });
+    var zona12Cardio = cardioRegs.filter(function(w){ return w.zona12; }).map(function(w){ return {v: parseFloat(w.zona12), data: w.data}; });
     var zonaAltaCardio = cardioRegs.filter(function(w){ return w.zonaAlta; }).map(function(w){ return {v: parseFloat(w.zonaAlta), data: w.data}; });
     // Nota de cobertura de dados: quantas sessões de cardio têm cada métrica
     // medida, pra deixar claro (sem alarmar) quando o gráfico tem menos pontos
     // por causa de sessões sem Watch, em vez de parecer um erro (regra 24).
     var coverageNoteFc = cardioRegs.length ? '<p class="note-mini">' + fcCardio.length + ' de ' + cardioRegs.length + ' sessões de cardio têm FC registrada' + (cardioSemWatch ? ' (' + cardioSemWatch + ' sem Watch)' : '') + '.</p>' : '';
+    var coverageNoteZona12 = cardioRegs.length ? '<p class="note-mini">' + zona12Cardio.length + ' de ' + cardioRegs.length + ' sessões de cardio têm zona 1-2 registrada' + (cardioSemWatch ? ' (' + cardioSemWatch + ' sem Watch)' : '') + '.</p>' : '';
     var coverageNoteZona = cardioRegs.length ? '<p class="note-mini">' + zonaAltaCardio.length + ' de ' + cardioRegs.length + ' sessões de cardio têm zona alta registrada' + (cardioSemWatch ? ' (' + cardioSemWatch + ' sem Watch)' : '') + '.</p>' : '';
+    html += '<div class="panel"><h2>Minutos em zona 1-2 (base aeróbica) · Cardio (corrida/caminhada)</h2>' + sparkline(zona12Cardio, "var(--data-5)") +
+      (zona12Cardio.length >= 2 ? '<p class="note">Objetivo: esse número SUBIR com o tempo (mais minutos contínuos em zona 1-2 por sessão) — é o principal motor de melhora de condicionamento nesse bloco, mais direto que zona alta pro objetivo 2 da anamnese.</p>' : (zona12Cardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + coverageNoteZona12 + '</div>';
     html += '<div class="panel"><h2>FC média · Cardio (corrida/caminhada)</h2>' + sparkline(fcCardio, "var(--data-4)") +
-      (fcCardio.length >= 2 ? '<p class="note">Objetivo: essa linha cair com o tempo pro mesmo ritmo/esforço — sinal de melhora da eficiência cardiovascular.</p>' : (fcCardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + coverageNoteFc + '</div>';
-    html += '<div class="panel"><h2>Minutos em zona alta (Z4+Z5) · Cardio (corrida/caminhada)</h2>' + sparkline(zonaAltaCardio, "var(--data-5)") +
-      (zonaAltaCardio.length >= 2 ? '<p class="note">Objetivo: esse número cair pro mesmo treino — menos tempo perto da FC máxima pro mesmo esforço percebido.</p>' : '') + coverageNoteZona + '</div>';
+      (fcCardio.length >= 2 ? '<p class="note">Objetivo: essa linha cair com o tempo pro mesmo ritmo/esforço — sinal de melhora da eficiência cardiovascular. Só compare sessões com ritmo/esforço parecido entre si.</p>' : (fcCardio.length === 0 ? '<p class="empty">Registre seus treinos de cardio na aba Análise pra ver esse gráfico.</p>' : '')) + coverageNoteFc + '</div>';
+    html += '<div class="panel"><h2>Minutos em zona alta (Z4+Z5) · Cardio (corrida/caminhada) — verificação</h2>' + sparkline(zonaAltaCardio, "var(--data-1)") +
+      (zonaAltaCardio.length >= 2 ? '<p class="note">Não é a meta principal do bloco atual (dominado por zona 1-2) — serve pra confirmar que você não está acidentalmente treinando mais intenso do que o prescrito no <code>c1</code>.</p>' : '') + coverageNoteZona + '</div>';
 
     html += '<div class="panel"><h2>Registrar peso corporal</h2>' +
       '<div class="field"><label>Peso hoje (kg)</label><input type="number" step="0.1" id="pesoHoje" placeholder="Ex: 87.5"></div>' +
@@ -2617,9 +2727,25 @@
   // Uma sessão de treino pode gerar MAIS DE UM registro de watch no mesmo dia
   // (ex.: força + corrida, cada um com FC bem diferente) — por isso "tipo de
   // atividade" existe: sem ele, dois registros no mesmo dia ficam indistinguíveis
-  // no histórico/gráficos. "Minutos em zona alta" (Z4+Z5, >=166bpm) é o proxy mais
-  // direto do objetivo 3 (FC menor pro mesmo esforço com o tempo) — mais informativo
-  // que só a FC média, que mistura trechos leves e pesados da mesma sessão.
+  // no histórico/gráficos. Sessão 3.24 — revisão dos parâmetros-chave do
+  // Watch, a pedido do Pablo (ele lembrou certo: eu já tinha dito, na
+  // Sessão 3.7, que "o objetivo 2 pede base aeróbica de verdade, zona 2",
+  // mas o app continuava destacando "zona alta" (Z4+Z5) como SE fosse a
+  // métrica principal — contradição real entre o que a prescrição do c1
+  // pede (ficar a maior parte do tempo em zona 1-2) e o que a Análise
+  // enfatizava). Correção: "minutos em zona 1-2" (`zona12`) é agora o proxy
+  // PRIMÁRIO de condicionamento (objetivo 2 — mais minutos contínuos em
+  // zona 1-2 por sessão = mais estímulo de base aeróbica real), exibido
+  // antes dos outros gráficos em Progresso. "Minutos em zona alta" (Z4+Z5,
+  // `zonaAlta`) continua existindo mas como VERIFICAÇÃO secundária — não
+  // mede "condicionamento melhorando" nesse bloco (dominado por zona 1-2
+  // de propósito), serve só pra confirmar que ele não está acidentalmente
+  // treinando mais intenso do que o prescrito (ou pra ficar relevante de
+  // novo quando/se entrar um bloco com trabalho específico de intensidade,
+  // ver metodologia no topo do arquivo). FC média continua relevante pro
+  // objetivo 3 (FC menor pro mesmo esforço) mas só é comparável entre
+  // sessões de ritmo/esforço parecido — isso fica pra conversa (regra 5),
+  // não pra um número isolado no gráfico.
   var TIPOS_ATIVIDADE = {
     forca: "Treino tradicional de força",
     caminhada_externa: "Caminhada ao ar livre",
@@ -2655,7 +2781,8 @@
       '<div class="field"><label>Ritmo médio (min/km, se corrida)</label><input type="text" placeholder="Ex: 7min40s/km" id="wRitmo"></div>' +
       '<div class="field"><label>FC média (bpm)</label><input type="number" id="wFcMedia"></div>' +
       '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="wFcMax"></div>' +
-      '<div class="field"><label>Minutos em zona alta (Z4+Z5, ≥166bpm aprox.)</label><input type="number" step="0.1" id="wZonaAlta"></div>' +
+      '<div class="field"><label>Minutos em zona 1-2 (base aeróbica — o alvo do plano atual, ver Análise)</label><input type="number" step="0.1" id="wZona12"></div>' +
+      '<div class="field"><label>Minutos em zona 4-5 (intensidade alta — verificação, não a meta principal agora)</label><input type="number" step="0.1" id="wZonaAlta"></div>' +
       '<div class="field"><label>Calorias ativas (kcal)</label><input type="number" id="wCalorias"></div>' +
       '</div>' +
       '<div class="field"><label>RPE/Esforço desse treino (1-10)</label><input type="number" min="1" max="10" id="wRpe"></div>' +
@@ -2677,7 +2804,7 @@
         var tipoLabel = TIPOS_ATIVIDADE[w.tipoAtividade] || "";
         html += '<details class="hist-item details-item"><summary class="row"><b>' + fmtDateBR(w.data) + (tipoLabel?' · '+tipoLabel:'') + (w.semWatch ? ' <span class="badge warn">sem Watch</span>' : '') + '</b><span>RPE ' + (w.rpe||"—") + '</span></summary>' +
           '<div class="row"><span>' + (w.duracao?w.duracao+"min":"") + (w.distancia?" · "+w.distancia+"km":"") + (w.ritmo?" · "+w.ritmo:"") + (w.fcMedia?" · FC méd "+w.fcMedia:"") + (w.fcMax?" (máx "+w.fcMax+")":"") + '</span>' +
-          '<span>' + (w.zonaAlta ? w.zonaAlta+"min em zona alta" : "") + '</span></div>' +
+          '<span>' + (w.zona12 ? w.zona12+"min em zona 1-2" : "") + (w.zonaAlta ? (w.zona12?" · ":"") + w.zonaAlta+"min em zona 4-5" : "") + '</span></div>' +
           (w.observacoes ? '<div class="row"><span>' + w.observacoes + '</span></div>' : '') +
         '</details>';
       });
@@ -2703,6 +2830,7 @@
         ritmo: semWatch ? "" : document.getElementById("wRitmo").value,
         fcMedia: semWatch ? "" : document.getElementById("wFcMedia").value,
         fcMax: semWatch ? "" : document.getElementById("wFcMax").value,
+        zona12: semWatch ? "" : document.getElementById("wZona12").value,
         zonaAlta: semWatch ? "" : document.getElementById("wZonaAlta").value,
         calorias: semWatch ? "" : document.getElementById("wCalorias").value,
         rpe: document.getElementById("wRpe").value,
