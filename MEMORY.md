@@ -855,3 +855,35 @@ A `apiKey` do Firebase já está exposta no HTML público (é assim que o Fireba
 
 ### Descoberta de segurança, ainda pendente de decisão
 Ainda não decidimos endurecer as regras do Firestore pra distinguir leitura de escrita nativamente nas próprias Security Rules (hoje qualquer `request.auth!=null` pode escrever, incluindo alguém que extraia a apiKey pública do HTML) — fica registrado como possível próximo passo de segurança, não bloqueante.
+
+## Sessão 3.29 — 30/09/2026 — Revisão de seleção de exercícios do Bloco 1 (tríceps, superset, abdômen por último)
+
+### Pedido do Pablo
+Depois da pesquisa da Sessão 3.28 confirmar full-body como a melhor divisão pra ele (não mudar isso do tênis por enquanto), Pablo pediu uma revisão dos exercícios JÁ colocados nas sessões A/B, buscando os de maior "concentração" de estímulo pros 3 objetivos da anamnese. Respondi com uma proposta de 3 ajustes de prioridade (não troca de exercício) — squat > leg press, RDL > cadeira ext.+flex., supino inclinado > crucifixo — citando o conceito de *stimulus-to-fatigue ratio* e comparações de EMG:
+- [Stimulus-to-Fatigue Ratio: Exercise Selection Guide](https://outlift.com/stimulus-to-fatigue-ratio-sfr/)
+- [Optimizing Resistance Training Technique to Maximize Muscle Hypertrophy (MDPI, narrative review)](https://www.mdpi.com/2411-5142/9/1/9)
+- [Leg Press vs Squat: What Research Really Shows](https://www.shred.app/thinking/leg-press-vs-squat-muscles) (citando Sjöberg et al., *Frontiers in Sports and Active Living*)
+- [Bench press vs. flys: which is better for the pecs? (Menno Henselmans)](https://mennohenselmans.com/bench-press-vs-flys/)
+
+Pablo respondeu "Pode implementar" e ampliou o pedido: revisar TODOS os grupamentos musculares trabalhados por exercício (deu tríceps como exemplo de possível lacuna), mudar o que precisasse, com 2 restrições novas: (1) sessão não deve passar de ~1h; (2) abdômen/core sempre por último na ordem da sessão.
+
+### Auditoria de grupamentos (ALL_MUSCLE_GROUPS × MUSCLE_MAP)
+Conferi os 11 grupamentos rastreados contra os 16 exercícios de força do plano (A+B). Achado: **tríceps era a única lacuna real** — só tinha estímulo indireto via `a1`/`a4`/`b1` (supino/desenvolvimento de ombro, já mapeados em `MUSCLE_MAP` desde sempre), nunca um exercício isolado dedicado — exatamente a mesma situação que bíceps/panturrilha (regra 22) e antebraço (regra 26) tinham antes de serem corrigidos. Os demais casos que poderiam parecer lacuna não são: quadríceps e posterior de coxa ficam 1x/semana cada (via `a3` e `b3` respectivamente), mas os dois batem glúteo em comum nas duas sessões — é o padrão normal de full-body A/B alternando um composto quad-dominante com um de dobradiça de quadril, não uma lacuna de cobertura. Deltoide posterior (via remada, indireto) e glúteo (via squat+RDL, sempre coprimário) também ficaram de fora de mudança por já terem estímulo substancial sem precisar de isolamento extra dentro do orçamento de tempo.
+
+### Implementação no `index.html`
+1. **3 ajustes de prioridade de padrão** (`a3`, `b3`, `b1`) — só o campo `obs` mudou, explicando a preferência e mantendo a opção alternativa no próprio `nome` do exercício (nada foi removido).
+2. **2 exercícios novos de tríceps direto**, um por sessão, seguindo o mesmo padrão de bíceps/panturrilha/antebraço (adicionar aos dois lados do full-body, 2 séries, 10-12 reps):
+   - `a9` — Tríceps corda (polia alta): ênfase em cabeça lateral, posição contraída.
+   - `b9` — Tríceps francês/testa (halteres): ênfase em cabeça longa, posição alongada — escolhido de propósito complementar ao `a9` (a mesma lógica de rosca direta/alternada entre bíceps de A/B), e também porque a literatura de ROM aponta vantagem de treinar em comprimento muscular maior pra hipertrofia.
+   - Vídeos checados via oEmbed do YouTube ANTES de entrar em `VIDEOS` (regra 10, GET `youtube.com/oembed?...&format=json`, ambos responderam 200): `a9` → `TLnIVtuuoYw` ("605. TRÍCEPS NA POLIA COM CORDA — Treino Correto"), `b9` → `VakpIeaaeXA` ("Como fazer o Tríceps Testa com Halteres — Laércio Refundini").
+   - `MUSCLE_MAP` ganhou `a9:["triceps"]` e `b9:["triceps"]`. Não precisou de região nova em `FRONT_PATHS`/`BACK_PATHS` — tríceps já existe no mapa muscular desde a regra 26.
+3. **Restrição de ≤1h por sessão → superset antagonista.** Com o exercício novo, cada sessão subiria de 8 pra 9 exercícios. Pra caber no tempo, `a6`+`a9` (rosca direta + tríceps corda) e `b6`+`b9` (rosca alternada + tríceps francês) viram superset (uma série de cada, alternando, descanso só depois do par) — reduz o tempo de descanso total desse par sem cortar volume, técnica com respaldo (par agonista-antagonista). `duracaoEstimada` de A e B atualizado de "60-70 min" pra "50-60 min".
+4. **Restrição de abdômen/core sempre por último → reordenação do array `exercicios`.** `a5` (Prancha abdominal) e `b5` (Sustentação unilateral com halter) foram movidos pra última posição de cada array. Como `renderTreino()` itera `tpl.exercicios` na ordem do array pra desenhar a tela (confirmado lendo o código antes de mexer), isso já é suficiente — nenhum `id` mudou, histórico salvo de cada exercício (`s.exercicios[exId]`, é um objeto indexado por id, não por posição) continua intacto. Ordem final: **A** = `a1, a3, a2, a4, a6, a9, a7, a8, a5` · **B** = `b1, b3, b2, b4, b6, b9, b7, b8, b5`.
+
+### Testes
+Criado `test26.js`: abre sessão A e B, confirma a ordem exata dos `data-ex`, confirma que `a9`/`b9` aparecem com a `obs` certa, confirma que o último item de cada sessão é `a5`/`b5`, e confirma o texto "Duração estimada: 50-60 min". Rodado limpo (0 erros de console/página). Também rodei de novo a suite existente que toca nesses exercícios/plano (`test6`, `test7`, `test11`, `test16`, `test19`, `test22`) — todos passaram, exceto uma asserção antiga em `test16.js` que espera `rowCount === 10` no painel de volume por grupamento (hoje são 11, desde que antebraço virou o 11º grupamento na regra 26/Sessão 3.19) — confirmado que essa asserção já estava desatualizada antes desta sessão (não é regressão causada pelas mudanças de hoje); fica registrado aqui como pendência de teste, não bloqueante.
+
+### Pendente
+- `plataforma-treino-performance.html` sincronizado com `index.html`. `CLAUDE.md` ganhou a regra 28 documentando essas decisões.
+- Ainda **NÃO commitei** essas mudanças — vou perguntar antes, como sempre (regra 7).
+- Pendência de teste (não bloqueante, registrada acima): `test16.js` tem uma asserção de contagem de grupamentos desatualizada desde a Sessão 3.19, vale corrigir numa sessão futura de manutenção de testes.

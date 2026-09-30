@@ -560,7 +560,9 @@
     b6: "1LpnsHK6uMw",
     b7: "S9kJU_vhzfo",
     a8: "QQCZ7XZsenM",
-    b8: "27EJ1IP4heE"
+    b8: "27EJ1IP4heE",
+    a9: "TLnIVtuuoYw",
+    b9: "VakpIeaaeXA"
   };
 
   // Grupamento muscular principal trabalhado por cada exercício do plano
@@ -582,7 +584,9 @@
     b5: ["abdomen"],
     b6: ["biceps"],
     b7: ["panturrilha"],
-    b8: ["antebraco"]
+    b8: ["antebraco"],
+    a9: ["triceps"],
+    b9: ["triceps"]
   };
 
   // Todos os grupamentos rastreados. Cada um tem forma própria desenhada na
@@ -608,31 +612,33 @@
       A: {
         nome: "Full-Body A",
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
-        duracaoEstimada: "60-70 min",
+        duracaoEstimada: "50-60 min",
         exercicios: [
           {id:"a1", nome:"Supino reto (barra ou halteres)", series:3, reps:"8-12", rir:"1-3", obs:"Priorize técnica sobre carga nesta fase."},
+          {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"1-3", obs:"Amplitude confortável, sem dor articular. Revisão de 30/09/2026 (regra 28 do CLAUDE.md): priorize o agachamento livre como padrão — ativa quadríceps tanto quanto o leg press, mas exige estabilização de tronco/core e recruta mais posterior de coxa/glúteo, com transferência real pro tênis que o leg press não tem. Leg press vira alternativa pra dia de dor/desconforto no joelho, não opção equivalente por padrão."},
           {id:"a2", nome:"Remada curvada ou remada máquina", series:3, reps:"8-12", rir:"1-3", obs:""},
-          {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"1-3", obs:"Amplitude confortável, sem dor articular."},
           {id:"a4", nome:"Desenvolvimento de ombro (halteres/máquina)", series:2, reps:"10-12", rir:"1-3", obs:""},
-          {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", tipo:"peso_tempo", obs:"Peso corporal (0kg) por padrão — só mude 'peso extra' se usar sobrecarga."},
-          {id:"a6", nome:"Rosca direta (barra ou halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026: bíceps não tinha nenhum exercício direto no plano (só estímulo indireto de remada/puxada) — ver regra 22 do CLAUDE.md."},
+          {id:"a6", nome:"Rosca direta (barra ou halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026: bíceps não tinha nenhum exercício direto no plano (só estímulo indireto de remada/puxada) — ver regra 22 do CLAUDE.md. Desde 30/09/2026, faça em superset com o tríceps corda logo abaixo (uma série de cada, alternando, descansando só depois do par) — economiza tempo de sessão sem perder volume, ver regra 28."},
+          {id:"a9", nome:"Tríceps corda (polia alta)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 30/09/2026: tríceps só tinha estímulo indireto (supino/desenvolvimento de ombro) — mesma lacuna que bíceps tinha antes da regra 22, ver regra 28 do CLAUDE.md. Cotovelos fixos ao lado do corpo, estenda até quase travar o cotovelo, controle a volta na descida. Em superset com a rosca direta acima."},
           {id:"a7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 16/09/2026: panturrilha não tinha nenhum exercício no plano. Foco na amplitude completa (descer até alongar bem, subir até a ponta do pé) — ver regra 22 do CLAUDE.md."},
-          {id:"a8", nome:"Rosca de punho (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026: antebraço não tinha nenhum exercício direto no plano (só estímulo indireto de pegada em remada/rosca/puxada) — ver regra 26 do CLAUDE.md. Sentado, antebraço apoiado na coxa/banco, palma pra cima — flexione só o punho, sem mexer o cotovelo."}
+          {id:"a8", nome:"Rosca de punho (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026: antebraço não tinha nenhum exercício direto no plano (só estímulo indireto de pegada em remada/rosca/puxada) — ver regra 26 do CLAUDE.md. Sentado, antebraço apoiado na coxa/banco, palma pra cima — flexione só o punho, sem mexer o cotovelo."},
+          {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", tipo:"peso_tempo", obs:"Peso corporal (0kg) por padrão — só mude 'peso extra' se usar sobrecarga. Movido pro final da sessão em 30/09/2026 — abdômen/core sempre por último, a pedido do Pablo (ver regra 28)."}
         ]
       },
       B: {
         nome: "Full-Body B",
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
-        duracaoEstimada: "60-70 min",
+        duracaoEstimada: "50-60 min",
         exercicios: [
-          {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"1-3", obs:"Grupamento que você mais gosta — aproveite."},
+          {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"1-3", obs:"Grupamento que você mais gosta — aproveite. Revisão de 30/09/2026 (regra 28 do CLAUDE.md): priorize o supino inclinado como padrão — EMG mostra mais ativação de peitoral (e ainda soma tríceps/ombro) que o crucifixo em quase toda a amplitude, porque o halter no crucifixo perde tensão bem no topo do movimento. Crucifixo vira variação ocasional, não opção equivalente por padrão."},
+          {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"1-3", obs:"Revisão de 30/09/2026 (regra 28 do CLAUDE.md): priorize o RDL como padrão — é 1 exercício composto (glúteo+posterior de coxa+eretores, padrão de dobradiça de quadril) contra 2 exercícios isolados na máquina que juntos tomam mais tempo pra estímulo comparável e não têm componente de equilíbrio/core. O padrão de dobradiça de quadril também é diretamente relevante pra potência/mudança de direção no tênis. Cadeira ext.+flex. vira alternativa pra dia de lombar sensível, não opção equivalente por padrão."},
           {id:"b2", nome:"Puxada frontal ou remada unilateral", series:3, reps:"8-12", rir:"1-3", obs:""},
-          {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"1-3", obs:""},
           {id:"b4", nome:"Elevação lateral", series:2, reps:"12-15", rir:"1-3", obs:""},
-          {id:"b5", nome:"Sustentação unilateral com halter em pé (cada lado)", series:2, reps:"20-30s", rir:"—", tipo:"peso_tempo", obs:"Trocado em 16/09/2026 (2ª troca — a versão com joelho apoiado ainda era prancha lateral, e o pedido era um exercício DIFERENTE, não uma variação mais fácil da mesma). Segure um halter numa mão, em pé, tronco ereto — o oblíquo do lado SEM peso trabalha isometricamente pra evitar que o tronco incline pro lado do halter. Mesmo alvo da prancha lateral (oblíquos/estabilidade lateral), sem exigir apoio no punho nem equilíbrio no chão. Troque de lado a cada série. Vídeo em inglês (não achei um tutorial em português específico pra esse exercício) mas a execução é simples de acompanhar só olhando — avise se preferir que eu procure outra opção."},
-          {id:"b6", nome:"Rosca alternada (halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md — variação de pegada em relação à rosca direta da sessão A, mesmo grupamento (bíceps)."},
+          {id:"b6", nome:"Rosca alternada (halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md — variação de pegada em relação à rosca direta da sessão A, mesmo grupamento (bíceps). Desde 30/09/2026, faça em superset com o tríceps francês logo abaixo (uma série de cada, alternando, descansando só depois do par) — ver regra 28."},
+          {id:"b9", nome:"Tríceps francês ou testa (halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 30/09/2026, ver regra 28 do CLAUDE.md — variação em relação ao tríceps corda da sessão A: alonga mais a cabeça longa do tríceps (posição de estiramento atrás da cabeça), enquanto a corda enfatiza mais a cabeça lateral na posição contraída — cobertura complementar, mesma lógica da rosca direta/alternada entre bíceps de A e B. Em superset com a rosca alternada acima."},
           {id:"b7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md."},
-          {id:"b8", nome:"Rosca de punho invertida (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026, ver regra 26 do CLAUDE.md — variação invertida (extensores do antebraço) em relação à rosca de punho da sessão A (flexores), mesmo grupamento (antebraço). Sentado, antebraço apoiado, palma pra baixo — estenda o punho pra cima."}
+          {id:"b8", nome:"Rosca de punho invertida (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026, ver regra 26 do CLAUDE.md — variação invertida (extensores do antebraço) em relação à rosca de punho da sessão A (flexores), mesmo grupamento (antebraço). Sentado, antebraço apoiado, palma pra baixo — estenda o punho pra cima."},
+          {id:"b5", nome:"Sustentação unilateral com halter em pé (cada lado)", series:2, reps:"20-30s", rir:"—", tipo:"peso_tempo", obs:"Trocado em 16/09/2026 (2ª troca — a versão com joelho apoiado ainda era prancha lateral, e o pedido era um exercício DIFERENTE, não uma variação mais fácil da mesma). Segure um halter numa mão, em pé, tronco ereto — o oblíquo do lado SEM peso trabalha isometricamente pra evitar que o tronco incline pro lado do halter. Mesmo alvo da prancha lateral (oblíquos/estabilidade lateral), sem exigir apoio no punho nem equilíbrio no chão. Troque de lado a cada série. Vídeo em inglês (não achei um tutorial em português específico pra esse exercício) mas a execução é simples de acompanhar só olhando — avise se preferir que eu procure outra opção. Movido pro final da sessão em 30/09/2026 — abdômen/core sempre por último, a pedido do Pablo (ver regra 28)."}
         ]
       },
       COND: {
