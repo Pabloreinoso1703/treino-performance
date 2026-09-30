@@ -1,2 +1,7 @@
 node_modules/
 .DS_Store
+
+# Credenciais - nunca versionar (Sessão 3.28: service account somente-leitura do Firestore)
+credenciais/
+*-key.json
+*serviceAccount*.json
