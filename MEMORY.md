@@ -792,3 +792,38 @@ Comparando o resumo que o próprio Watch mostra pra Tênis (Tempo, Calorias, FC 
 - Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo (nunca assumir autorização de sessões anteriores) se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele.
 - Pablo digitar o registro do Watch dessa partida de tênis (valores prontos acima) e, se quiser, completar RPE/sono pra eu poder cruzar com a carga de treino da semana.
 - Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.
+
+
+## Sessão 3.27 — 30/09/2026 — Fim do Bloco 0, transição pro Bloco 1 + Tênis conta como treino da semana
+
+Pablo pediu uma análise completa de "2 semanas de treino" concluídas, respostas a 4 perguntas (mudar o treino por ter acostumado? como dividir o treino e focar nas metas? como ganhar condicionamento e diminuir os batimentos? como garantir um físico melhor/mais definido?), um cronograma completo daqui pra frente, e que partidas de Tênis contem como "treino da semana" — com ou sem dado do Watch preenchido — dado o esforço físico grande que ficou evidente na partida da Sessão 3.26 (RPE 9, FC média 184bpm).
+
+### Transparência sobre o que eu realmente vejo
+Não tenho acesso direto ao Firestore de produção do Pablo (regra 5/17) — essa análise é baseada no que já está documentado aqui no MEMORY.md/CLAUDE.md (o plano em si, a calibração de ritmo da Sessão 3.25.1, a partida de tênis da 3.26) e no calendário/anamnese originais, não numa auditoria linha-a-linha de todas as sessões reais dele. Fui direto e claro com ele sobre essa limitação, e pedi pra ele confirmar/compartilhar: quantas sessões A/B/COND ele realmente completou nas últimas ~3 semanas, se algum exercício ficou com técnica ruim ou dor, e se ele andou registrando peso corporal/fotos de progresso (regra 25 já tem essas features prontas, mas eu não sei se ele está usando).
+
+### Checkpoint já estava previsto
+O projeto começou em 09-10/09/2026. O Bloco 0 (fundação, RIR 3-4) foi desenhado pra durar ~2 semanas, com reavaliação já combinada pra 22-24/09 (Sessão 3.16). O pedido do Pablo em 30/09 bate exatamente com esse checkpoint já planejado (só ~1 semana depois do previsto) — não é uma mudança de estratégia no meio do caminho, é o momento natural de decisão que o próprio plano antecipava.
+
+### Resposta às 4 perguntas (resumo — texto completo foi dado ao Pablo na conversa)
+1. **Mudar o treino por ter acostumado?** Sim — transição Bloco 0 → Bloco 1 aplicada no `PLANO`: RIR alvo de todo exercício de força sobe de 3-4 pra 1-3 (mais perto da falha), texto de apoio do Dashboard atualizado, duração-alvo do `c1` sobe de 20-25 pra 25-35 min (mesmo ritmo/zona, só mais tempo contínuo). Documentado como regra 27 do CLAUDE.md.
+2. **Como dividir o treino e focar nas metas?** Split já existente (A/B alternado full-body + `c1` condicionamento) continua — o que muda é que Tênis agora conta oficialmente como treino da semana (ver abaixo), então a semana-tipo do Bloco 1 fica: 2x força (A/B) + 1-2x `c1` (zona 1-2) + Tênis quando acontecer (tratado como um dia de treino pesado pra fins de espaçamento de recuperação, não empilhado em cima de uma semana já cheia) + pelo menos 1 dia de descanso completo, mais se Tênis cair perto de um treino de perna pesado.
+3. **Como ganhar condicionamento e diminuir os batimentos (objetivo 3)?** Continuar `c1` no ritmo/zona já calibrado (~10-11min/km, zona 1-2), aumentando duração aos poucos (não ritmo) — é assim que a base aeróbica melhora de verdade. Métrica que importa: mesmo ritmo, FC média caindo ao longo das semanas (reteste o ritmo de referência a cada 2-3 semanas e compare). Transferência de Tênis pra FC mais eficiente é de médio/longo prazo (meses), não é o veículo pra ganho rápido — isso é o `c1`.
+4. **Como garantir um físico melhor/mais definido (objetivo 1)?** Déficit calórico moderado (10-15%, nunca >25%), proteína 1,6-2,2g/kg/dia em ~4 refeições, progressão de carga (agora mais viável com RIR 1-3), sono adequado — nada novo em relação à metodologia já documentada, mas pedi pro Pablo usar de verdade os painéis de "Registrar peso corporal" e "Fotos de progresso" (regra 25) que já existem no app, porque sem esse dado eu não consigo acompanhar tendência real de composição corporal com ele.
+
+### Cronograma Bloco 1 (semanas 3-10, ~30/09 até meados/fim de novembro/2026)
+- Semanas 3-4 (agora): RIR 1-3 recém-iniciado, `c1` 25-30min, primeiros ciclos de progressão dupla nos principais exercícios.
+- Semanas 5-6: `c1` estendendo pra 30-35min, progressão de carga contínua.
+- Semana 7-8: deload leve sugerido (reduzir ~40% das séries, RIR volta pra 3-4 por 1 semana) antes de intensificar mais — prática padrão de periodização, ainda mais reforçada pela carga concorrente de Tênis.
+- Semanas 9-10: transição pro Bloco 2 (condicionamento específico de tênis — agilidade, potência, RSA), avaliando prontidão com base em como as semanas anteriores foram.
+
+### Tênis conta como treino da semana
+Implementado via dois helpers novos — `diasTreinadosSet()` (união de datas de `state.sessions` com datas de `treino_watch` onde `tipoAtividade==="tenis"`) e `totalTreinosContagem()` — usados em `calcStreak()`, `renderWeekStrip()`, no total "treinos registrados" do Dashboard, nos selos de total de treinos, e no calendário mensal (dia de Tênis agora pinta verde/"trained", não mais o azul genérico "só Watch", mas continua não-clicável por não ter sessão associada). Funciona com ou sem dado do Watch preenchido (`semWatch:true` também conta, já que o que importa é a data do registro, não os campos biométricos). Outros tipos de Watch (corrida, caminhada) continuam de fora dessas contagens de propósito — só Tênis ganhou esse tratamento, porque é o único tipo que nunca tem uma sessão correspondente na aba Treino. De brinde, a reescrita de `calcStreak()` corrigiu um bug latente de dias duplicados contando 2x na sequência (agora usa um Set de datas, sem duplicata possível). Documentado como regra 27 do CLAUDE.md.
+
+### Testes
+`test25.js` novo: confirma que 2 partidas de tênis em dias seguidos (sem nenhuma sessão de força/condicionamento) geram streak=2, "treinos registrados"=2, tira da semana com 2 dias marcados, e calendário mensal com 2 células verdes não-clicáveis. Rodei a suíte completa (26 arquivos) depois de TODAS as mudanças dessa sessão (streak/contagens + transição de bloco) — sem regressão, `ERRORS: []` em todos exceto os warnings de "permissions policy" já conhecidos em `test.js`/`test2.js`.
+
+### Pendências no fim da Sessão 3.27
+- Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo se o Pablo quer que eu rode `git add`/`git commit` (computador ficou momentaneamente desconectado durante essa sessão — reconectou antes do fim).
+- **Aguardando o Pablo:** confirmar quantas sessões A/B/COND ele completou de verdade nas últimas ~3 semanas (não tenho esse dado), avisar se algum exercício ficou com técnica ruim/dor, e começar a usar os painéis de peso corporal/fotos de progresso se ainda não estiver usando.
+- Reavaliar o Bloco 1 de novo por volta da semana 7-8 (meados/fim de novembro) pra decidir o deload e a transição pro Bloco 2 — bom gatilho pra próxima decisão de bloco, mesmo padrão da 3.16.
+- Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.

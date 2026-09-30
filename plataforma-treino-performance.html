@@ -603,21 +603,21 @@
      compara com a sessão anterior automaticamente.
      ========================================================= */
   var PLANO = {
-    bloco: "Bloco 0 — Fundação (semanas 1-2)",
+    bloco: "Bloco 1 — Acumulação (semanas 3-10)",
     sessoes: {
       A: {
         nome: "Full-Body A",
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
         duracaoEstimada: "60-70 min",
         exercicios: [
-          {id:"a1", nome:"Supino reto (barra ou halteres)", series:3, reps:"8-12", rir:"3-4", obs:"Priorize técnica sobre carga nesta fase."},
-          {id:"a2", nome:"Remada curvada ou remada máquina", series:3, reps:"8-12", rir:"3-4", obs:""},
-          {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"3-4", obs:"Amplitude confortável, sem dor articular."},
-          {id:"a4", nome:"Desenvolvimento de ombro (halteres/máquina)", series:2, reps:"10-12", rir:"3-4", obs:""},
+          {id:"a1", nome:"Supino reto (barra ou halteres)", series:3, reps:"8-12", rir:"1-3", obs:"Priorize técnica sobre carga nesta fase."},
+          {id:"a2", nome:"Remada curvada ou remada máquina", series:3, reps:"8-12", rir:"1-3", obs:""},
+          {id:"a3", nome:"Agachamento livre ou leg press", series:3, reps:"8-12", rir:"1-3", obs:"Amplitude confortável, sem dor articular."},
+          {id:"a4", nome:"Desenvolvimento de ombro (halteres/máquina)", series:2, reps:"10-12", rir:"1-3", obs:""},
           {id:"a5", nome:"Prancha abdominal", series:3, reps:"30-40s", rir:"—", tipo:"peso_tempo", obs:"Peso corporal (0kg) por padrão — só mude 'peso extra' se usar sobrecarga."},
-          {id:"a6", nome:"Rosca direta (barra ou halteres)", series:2, reps:"10-12", rir:"3-4", obs:"Adicionado em 16/09/2026: bíceps não tinha nenhum exercício direto no plano (só estímulo indireto de remada/puxada) — ver regra 22 do CLAUDE.md."},
-          {id:"a7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 16/09/2026: panturrilha não tinha nenhum exercício no plano. Foco na amplitude completa (descer até alongar bem, subir até a ponta do pé) — ver regra 22 do CLAUDE.md."},
-          {id:"a8", nome:"Rosca de punho (halteres ou barra)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 18/09/2026: antebraço não tinha nenhum exercício direto no plano (só estímulo indireto de pegada em remada/rosca/puxada) — ver regra 26 do CLAUDE.md. Sentado, antebraço apoiado na coxa/banco, palma pra cima — flexione só o punho, sem mexer o cotovelo."}
+          {id:"a6", nome:"Rosca direta (barra ou halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026: bíceps não tinha nenhum exercício direto no plano (só estímulo indireto de remada/puxada) — ver regra 22 do CLAUDE.md."},
+          {id:"a7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 16/09/2026: panturrilha não tinha nenhum exercício no plano. Foco na amplitude completa (descer até alongar bem, subir até a ponta do pé) — ver regra 22 do CLAUDE.md."},
+          {id:"a8", nome:"Rosca de punho (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026: antebraço não tinha nenhum exercício direto no plano (só estímulo indireto de pegada em remada/rosca/puxada) — ver regra 26 do CLAUDE.md. Sentado, antebraço apoiado na coxa/banco, palma pra cima — flexione só o punho, sem mexer o cotovelo."}
         ]
       },
       B: {
@@ -625,14 +625,14 @@
         aquecimento: "5 min de mobilidade articular geral + 1 série leve de aquecimento no 1º exercício antes de valer.",
         duracaoEstimada: "60-70 min",
         exercicios: [
-          {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"3-4", obs:"Grupamento que você mais gosta — aproveite."},
-          {id:"b2", nome:"Puxada frontal ou remada unilateral", series:3, reps:"8-12", rir:"3-4", obs:""},
-          {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"3-4", obs:""},
-          {id:"b4", nome:"Elevação lateral", series:2, reps:"12-15", rir:"3-4", obs:""},
+          {id:"b1", nome:"Supino inclinado ou crucifixo", series:3, reps:"8-12", rir:"1-3", obs:"Grupamento que você mais gosta — aproveite."},
+          {id:"b2", nome:"Puxada frontal ou remada unilateral", series:3, reps:"8-12", rir:"1-3", obs:""},
+          {id:"b3", nome:"Levantamento terra romeno ou cadeira ext.+flex.", series:3, reps:"8-12", rir:"1-3", obs:""},
+          {id:"b4", nome:"Elevação lateral", series:2, reps:"12-15", rir:"1-3", obs:""},
           {id:"b5", nome:"Sustentação unilateral com halter em pé (cada lado)", series:2, reps:"20-30s", rir:"—", tipo:"peso_tempo", obs:"Trocado em 16/09/2026 (2ª troca — a versão com joelho apoiado ainda era prancha lateral, e o pedido era um exercício DIFERENTE, não uma variação mais fácil da mesma). Segure um halter numa mão, em pé, tronco ereto — o oblíquo do lado SEM peso trabalha isometricamente pra evitar que o tronco incline pro lado do halter. Mesmo alvo da prancha lateral (oblíquos/estabilidade lateral), sem exigir apoio no punho nem equilíbrio no chão. Troque de lado a cada série. Vídeo em inglês (não achei um tutorial em português específico pra esse exercício) mas a execução é simples de acompanhar só olhando — avise se preferir que eu procure outra opção."},
-          {id:"b6", nome:"Rosca alternada (halteres)", series:2, reps:"10-12", rir:"3-4", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md — variação de pegada em relação à rosca direta da sessão A, mesmo grupamento (bíceps)."},
-          {id:"b7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md."},
-          {id:"b8", nome:"Rosca de punho invertida (halteres ou barra)", series:2, reps:"15-20", rir:"3-4", obs:"Adicionado em 18/09/2026, ver regra 26 do CLAUDE.md — variação invertida (extensores do antebraço) em relação à rosca de punho da sessão A (flexores), mesmo grupamento (antebraço). Sentado, antebraço apoiado, palma pra baixo — estenda o punho pra cima."}
+          {id:"b6", nome:"Rosca alternada (halteres)", series:2, reps:"10-12", rir:"1-3", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md — variação de pegada em relação à rosca direta da sessão A, mesmo grupamento (bíceps)."},
+          {id:"b7", nome:"Elevação de panturrilha (em pé ou sentado)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 16/09/2026, ver regra 22 do CLAUDE.md."},
+          {id:"b8", nome:"Rosca de punho invertida (halteres ou barra)", series:2, reps:"15-20", rir:"1-3", obs:"Adicionado em 18/09/2026, ver regra 26 do CLAUDE.md — variação invertida (extensores do antebraço) em relação à rosca de punho da sessão A (flexores), mesmo grupamento (antebraço). Sentado, antebraço apoiado, palma pra baixo — estenda o punho pra cima."}
         ]
       },
       COND: {
@@ -640,7 +640,7 @@
         aquecimento: "3-5 min de caminhada leve antes de acelerar.",
         duracaoEstimada: "20-30 min",
         exercicios: [
-          {id:"c1", nome:"Caminhada rápida, trote ou corrida contínua", series:1, reps:"20-25 min", rir:"RPE 4-5/10", tipo:"cardio", obs:"Deixe a FC guiar, não o km/h: fique a maior parte do tempo abaixo de ~153bpm (zona 1-2), mesmo que isso signifique caminhar rápido em vez de trotar. No teste de 15/09 a 9km/h te colocou 8 dos 10 min em zona 5 (pico 195bpm) — muito mais intenso que 'zona 2 conversável'. Comece bem mais devagar e vá aumentando o ritmo só quando a FC permitir ficar na zona certa. Calibração boa em 23/09: ritmo de ~10min50s/km (bem mais devagar que o teste de 15/09) te manteve em zona 2 quase o treino inteiro (25 dos 30 min), com só 9s em zona 4 e nada em zona 5 — é essa a referência de ritmo pra continuar usando enquanto o objetivo for base aeróbica, não velocidade."}
+          {id:"c1", nome:"Caminhada rápida, trote ou corrida contínua", series:1, reps:"25-35 min", rir:"RPE 4-5/10", tipo:"cardio", obs:"Deixe a FC guiar, não o km/h: fique a maior parte do tempo abaixo de ~153bpm (zona 1-2), mesmo que isso signifique caminhar rápido em vez de trotar. No teste de 15/09 a 9km/h te colocou 8 dos 10 min em zona 5 (pico 195bpm) — muito mais intenso que 'zona 2 conversável'. Comece bem mais devagar e vá aumentando o ritmo só quando a FC permitir ficar na zona certa. Calibração boa em 23/09: ritmo de ~10min50s/km (bem mais devagar que o teste de 15/09) te manteve em zona 2 quase o treino inteiro (25 dos 30 min), com só 9s em zona 4 e nada em zona 5 — é essa a referência de ritmo pra continuar usando enquanto o objetivo for base aeróbica, não velocidade. Bloco 1 (30/09): duração-alvo sobe de 20-25 pra 25-35 min — mesmo ritmo/zona de antes, só mais tempo contínuo. Suba a duração aos poucos (uns 5 min a cada 1-2 semanas) antes de pensar em acelerar o ritmo."}
         ]
       }
     }
@@ -1394,9 +1394,37 @@
     return "A";
   }
 
+  // Sessão 3.27 — Tênis é esforço físico real de verdade (RPE 9/10, FC média
+  // 184bpm numa partida recente) mas só existe como registro do Watch
+  // (nunca passa pela aba Treino — não tem série/reps pra marcar como uma
+  // sessão de força), então até aqui NUNCA contava pra streak, tira da
+  // semana nem total de treinos — só entrava em "dias ativos"/heatmap de
+  // consistência (que já somavam Watch de qualquer tipo). Pablo pediu
+  // explicitamente: Tênis conta como treino da semana, com ou sem dado do
+  // Watch preenchido (ou seja, mesmo com semWatch:true — só duração/RPE
+  // preenchidos já basta). Helper central: um dia "conta" como treinado se
+  // tem sessão na aba Treino (força/condicionamento) OU um registro de
+  // Watch com tipoAtividade "tenis" — outros tipos de Watch (corrida,
+  // caminhada) continuam de fora de propósito, isso não mudou (cardio puro
+  // já tem seu próprio anel/gráfico, não é "um treino" no sentido de
+  // streak/força).
+  function diasTreinadosSet(){
+    var set = {};
+    state.sessions.forEach(function(s){ set[s.data] = true; });
+    state.watch.forEach(function(w){ if(w.tipoAtividade === "tenis") set[w.data] = true; });
+    return set;
+  }
+  function totalTreinosContagem(){
+    return state.sessions.length + state.watch.filter(function(w){ return w.tipoAtividade === "tenis"; }).length;
+  }
+
   function calcStreak(){
-    if(state.sessions.length === 0) return 0;
-    var dates = state.sessions.map(function(s){ return s.data; }).sort().reverse();
+    // Object.keys(set) já remove datas duplicadas (ex.: duas sessões no
+    // mesmo dia), o que também corrige de brinde um bug latente que existia
+    // aqui antes: com `state.sessions.map(...)` sem dedupe, um dia com 2
+    // sessões contava 2x na sequência.
+    var dates = Object.keys(diasTreinadosSet()).sort().reverse();
+    if(dates.length === 0) return 0;
     var streak = 0;
     var cursor = new Date(todayISO());
     for(var i=0;i<dates.length;i++){
@@ -1413,8 +1441,7 @@
   function renderWeekStrip(){
     var DOW = ["D","S","T","Q","Q","S","S"];
     var todaysISO = todayISO();
-    var trainedDates = {};
-    state.sessions.forEach(function(s){ trainedDates[s.data] = true; });
+    var trainedDates = diasTreinadosSet(); // Sessão 3.27 — inclui dias com partida de tênis
     var html = '<div class="week-strip">';
     for(var i=6;i>=0;i--){
       // Usa o construtor local (parseISOToLocalDate) em vez de `new
@@ -1811,7 +1838,7 @@
   function renderDashboard(){
     var el = document.getElementById("view-dashboard");
     var streak = calcStreak();
-    var totalSessoes = state.sessions.length;
+    var totalSessoes = totalTreinosContagem(); // Sessão 3.27 — inclui partidas de tênis
     var sugestao = proximaSessaoSugerida();
 
     el.innerHTML =
@@ -1827,7 +1854,7 @@
 
       '<div class="panel">' +
         '<h2>' + PLANO.bloco + '</h2>' +
-        '<p class="sub">Progressão conservadora por ~2 semanas, depois sobe volume/carga normalmente.</p>' +
+        '<p class="sub">RIR alvo 1-3 (mais perto da falha que o Bloco 0) — suba a carga sempre que completar o topo da faixa de reps com boa técnica.</p>' +
         '<div class="bento-grid">' +
           '<div class="bento-tile bento-hero span2"><div class="hero-number" style="color:' + stateColorForFraction(streak/3) + '">' + streak + '</div><div class="hero-label">dias seguidos</div></div>' +
           '<div class="bento-tile"><b>' + totalSessoes + '</b><span>treinos registrados</span></div>' +
@@ -2392,6 +2419,13 @@
     state.sessions.forEach(function(s){ if(!sessionByDate[s.data]) sessionByDate[s.data] = s; });
     var watchDates = {};
     state.watch.forEach(function(w){ watchDates[w.data] = true; });
+    // Sessão 3.27 — dia com partida de tênis conta como "treino" (verde)
+    // igual a uma sessão de força/condicionamento, não como o azul "só
+    // Watch" genérico (que continua valendo pra corrida/caminhada/força
+    // registrada só no Watch sem passar pela aba Treino). Sem sessão
+    // associada, então não abre detalhe ao tocar — só muda a cor.
+    var tenisDates = {};
+    state.watch.forEach(function(w){ if(w.tipoAtividade === "tenis") tenisDates[w.data] = true; });
 
     var startDow = new Date(y, m, 1).getDay(); // 0=domingo, campo de calendário local
     var daysInMonth = new Date(y, m+1, 0).getDate();
@@ -2404,9 +2438,10 @@
       var isToday = iso === todayISO();
       var sessao = sessionByDate[iso];
       var temTreino = !!sessao;
+      var temTenis = !tenisDates[iso] ? false : true;
       var temWatch = !!watchDates[iso];
-      var cls = "cal-cell" + (isToday ? " today" : "") + (temTreino ? " trained clickable" : (temWatch ? " watch-only" : ""));
-      var titulo = fmtDateBR(iso) + (temTreino ? " · treino registrado" : (temWatch ? " · Watch registrado" : ""));
+      var cls = "cal-cell" + (isToday ? " today" : "") + ((temTreino || temTenis) ? " trained" : (temWatch ? " watch-only" : "")) + (temTreino ? " clickable" : "");
+      var titulo = fmtDateBR(iso) + (temTreino ? " · treino registrado" : (temTenis ? " · tênis registrado" : (temWatch ? " · Watch registrado" : "")));
       cells.push('<div class="' + cls + '"' + (temTreino ? ' data-session-id="' + sessao._id + '"' : '') + ' title="' + titulo + '">' + day + '</div>');
     }
 
@@ -2491,7 +2526,7 @@
     }
     return {
       streak: calcStreak(),
-      totalSessions: state.sessions.length,
+      totalSessions: totalTreinosContagem(), // Sessão 3.27 — inclui partidas de tênis
       consistencyPct: Math.round((activeDays/days)*100)
     };
   }
