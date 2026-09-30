@@ -764,3 +764,31 @@ Rodei a suíte completa de novo depois de editar o `obs` do `c1` (só mudança d
 - Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele.
 - Pablo digitar os dois registros do Watch de hoje (força já tinha, falta completar com zona12/zonaAlta calculados na Sessão 3.25; condicionamento é registro novo, valores prontos acima) usando a função de editar/criar registro.
 - Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.
+
+
+## Sessão 3.26 — 30/09/2026 — Partida de tênis de verdade (FC média 184bpm) + campos do formulário viram condicionais por tipo de atividade
+
+Pablo mandou 2 prints do Apple Watch de uma partida de Tênis de hoje (07:53-09:10) e pediu: (1) análise completa do treino; (2) reavaliar se os parâmetros que aparecem no formulário da aba Análise fazem sentido pra Tênis, e remover os que não fizerem.
+
+### Dados da partida
+1h16min39s de duração, **FC média 184bpm** (faixa observada no gráfico: 131-204bpm), calorias ativas 1.022 / totais 1.151. Zonas: Zona 1 = 0:16, Zona 2 = 0:13, Zona 3 = 4:18, **Zona 4 = 12:19, Zona 5 = 59:32**. Ou seja: **77% do tempo (59min32s de 76min39s) em zona 5**, praticamente nada em zona 1-2 (29 segundos somados). Campo "Esforço" do próprio Watch ficou em branco (não preenchido).
+
+### Análise
+Isso é um nível de intensidade muito alto e sustentado — FC média de 184bpm por mais de 1h é um esforço extremamente puxado, e pico de 204bpm está acima até da estimativa grosseira de FC máxima por idade (220-25=195, ou 208-0,7×25≈190 pela fórmula de Tanaka, ambas só estimativas populacionais, não uma medida real do teu máximo individual). Pode ser real (jogo de ritmo muito intenso, disputado, com pouco descanso entre pontos) ou pode ter algum ruído do sensor óptico de pulso (esse tipo de sensor é sensível a movimento/vibração, e tênis tem bastante disso) — não dá pra saber qual sem mais contexto seu. De qualquer forma, vale prestar atenção em como você se sentiu depois (fadiga, tontura, recuperação) e quanto dormiu/hidratou antes — não preenchi RPE/sono porque você não me passou esses dados; se quiser, complete o campo "Esforço/RPE" e "Sono" no registro pra eu poder cruzar com os outros treinos da semana.
+
+**Do ponto de vista do objetivo 2** (condicionamento com transferência real pro tênis): essa distribuição de zona (quase tudo em zona 4-5) é fisiologicamente o oposto do treino de condicionamento geral atual (`c1`, focado em zona 1-2/base aeróbica) — e isso está CERTO, não é um problema: são fases/estímulos diferentes de propósito. O `c1` constrói a base aeróbica geral (Bloco 1 da metodologia); uma partida de tênis de verdade é inerentemente anaeróbica/intermitente (rajadas de esforço alto, pouco descanso) — o tipo de exigência que o Bloco 2 (RSA/potência/agilidade específica de tênis) mira desenvolver depois. Esse dado de hoje é um bom indicador de que o condicionamento anaeróbico específico vai ser um desafio real quando o Bloco 2 chegar, e que vale monitorar recuperação pós-jogo daqui pra frente (é um estímulo puxado).
+
+**Valores prontos pra digitar no registro do Watch dessa partida:** duração 77min (76min39s) · FC média 184 · FC máxima 204 · calorias ativas 1022 · zona 1-2 = 0:16+0:13 = 29s ≈ 0,48min (praticamente zero, nem vale a pena registrar) · zona 4-5 = 12:19+59:32 = 71min51s ≈ 71,85min · RPE e sono: só você sabe, preencha se quiser que eu cruze com os outros dados da semana.
+
+### Campos do formulário viram condicionais ao tipo de atividade
+Comparando o resumo que o próprio Watch mostra pra Tênis (Tempo, Calorias, FC média, Esforço — SEM distância/ritmo/cadência) contra o resumo de uma corrida (que tem Distância, Ritmo, Cadência, já visto na Sessão 3.25.1), confirmei que o Watch nunca mede deslocamento linear numa partida de Tênis — faz sentido, não é uma atividade de progressão de posição como corrida/caminhada. Os campos "Distância" e "Ritmo médio" do formulário da aba Análise eram herdados do desenho original (pensado pra corrida) e apareciam pra QUALQUER tipo de atividade, inclusive Tênis e Força, onde são só ruído sem dado real por trás.
+
+**Correção:** os dois campos agora só aparecem quando o tipo selecionado é de endurance (corrida/caminhada — a mesma lista `TIPOS_ENDURANCE` que já existia pros gráficos de Progresso). Diferente disso, os campos de zona (`zona12`/`zonaAlta`) CONTINUAM aparecendo pra qualquer tipo — o Watch mede zona de FC em qualquer atividade (confirmado nesse mesmo print de Tênis) e o dado é real e potencialmente útil (tempo em zona alta numa partida é um sinal de intensidade anaeróbica, relevante pro Bloco 2 mais pra frente) — só a frase "é o alvo do plano atual" (que faz sentido pro `c1`/corrida, objetivo de base aeróbica) some quando o tipo não é de endurance, porque não é realista nem é o objetivo controlar a FC pra ficar em zona 2 durante uma partida de verdade. Implementado com um helper compartilhado (`watchTipoFieldConfig(tipo)`) usado tanto no formulário de registro novo (reativo — muda ao trocar o tipo no `<select>`) quanto no de edição de um registro já salvo (calculado uma vez, já que editar não muda o tipo da atividade).
+
+### Testes
+`test24.js` novo: confirma que distância/ritmo somem do formulário ao selecionar Tênis e reaparecem ao selecionar Corrida interna, que as labels de zona não mencionam "alvo do plano atual" pra Tênis mas mencionam pra corrida, e que editar um registro de Tênis já salvo (sem campo de distância no DOM) não quebra o salvamento nem sobrescreve nada indevidamente. Rodei a suíte completa (agora 25 arquivos) depois — sem regressão, `ERRORS: []` em todos exceto os warnings de "permissions policy" já conhecidos em `test.js`/`test2.js`.
+
+### Pendências no fim da Sessão 3.26
+- Sincronizar `plataforma-treino-performance.html`, entregar os arquivos e perguntar de novo (nunca assumir autorização de sessões anteriores) se o Pablo quer que eu rode `git add`/`git commit` direto no computador dele.
+- Pablo digitar o registro do Watch dessa partida de tênis (valores prontos acima) e, se quiser, completar RPE/sono pra eu poder cruzar com a carga de treino da semana.
+- Pendência antiga, não relacionada: auditoria dos demais grupamentos do mapa muscular ainda não retomada.

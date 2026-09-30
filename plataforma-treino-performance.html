@@ -2760,6 +2760,29 @@
   // contínuo, então FC média não é comparável com corrida/caminhada contínua).
   var TIPOS_ENDURANCE = ["caminhada_externa", "corrida_esteira", "caminhada_esteira"];
 
+  // Sessão 3.26 — Pablo mandou o Watch real de uma partida de tênis (76min,
+  // 77% do tempo em zona 5, sem distância/ritmo/cadência no resumo do
+  // próprio relógio) e pediu pra eu reavaliar se os campos do formulário
+  // fazem sentido pra tênis. Não fazem, pelo menos não todos: distância e
+  // ritmo não existem no registro do Watch pra Tênis (nem pra Força) porque
+  // não são atividades de deslocamento linear — mostrar esses campos ali é
+  // ruído. Zona 1-2/zona 4-5 continuam existindo de verdade no Watch pra
+  // qualquer atividade (o Tênis também tem zonas 1-5 no detalhe de
+  // batimentos), então não faz sentido remover o campo em si — só a frase
+  // "é o alvo do plano atual" não pode aparecer pra tênis, porque o alvo do
+  // bloco atual (zona 1-2/base aeróbica) é especificamente do `c1`
+  // (corrida/caminhada), não de uma partida de tênis de verdade (que é
+  // esforço intermitente/anaeróbico por natureza — controlar a FC pra ficar
+  // em zona 2 durante um jogo não é realista nem é o objetivo ali).
+  function watchTipoFieldConfig(tipo){
+    var isEndurance = TIPOS_ENDURANCE.indexOf(tipo) !== -1;
+    return {
+      showDistanciaRitmo: isEndurance,
+      zona12Label: isEndurance ? "Minutos em zona 1-2 (base aeróbica — o alvo do plano atual, ver Análise)" : "Minutos em zona 1-2",
+      zonaAltaLabel: isEndurance ? "Minutos em zona 4-5 (intensidade alta — verificação, não a meta principal agora)" : "Minutos em zona 4-5 (alta intensidade)"
+    };
+  }
+
   function renderAnalise(){
     var el = document.getElementById("view-analise");
     // Pré-preenchimento vindo de um "Finalizar treino" recente (ver
@@ -2777,12 +2800,22 @@
       '</select></div>' +
       '<div class="field"><label>Duração (min)</label><input type="number" id="wDuracao" value="' + (prefill && prefill.duracao ? prefill.duracao : '') + '"></div>' +
       '<div id="wCamposWatch">' +
-      '<div class="field"><label>Distância (km, se aplicável)</label><input type="number" step="0.01" id="wDistancia"></div>' +
-      '<div class="field"><label>Ritmo médio (min/km, se corrida)</label><input type="text" placeholder="Ex: 7min40s/km" id="wRitmo"></div>' +
+      // Sessão 3.26: distância/ritmo só fazem sentido pra atividades de
+      // deslocamento contínuo (corrida/caminhada) — o próprio Apple Watch
+      // não mede/mostra nenhum dos dois num treino de Tênis ou Força (são
+      // atividades sem progressão linear de posição), então mostrar esses
+      // dois campos ali é só ruído/confusão. `wireAnaliseTipoWatch()` liga a
+      // visibilidade desse bloco e o texto das labels de zona ao tipo
+      // selecionado em #wTipo, chamada tanto no load inicial quanto a cada
+      // troca de tipo.
+      '<div id="wCamposDistanciaRitmo">' +
+      '<div class="field"><label>Distância (km)</label><input type="number" step="0.01" id="wDistancia"></div>' +
+      '<div class="field"><label>Ritmo médio (min/km)</label><input type="text" placeholder="Ex: 7min40s/km" id="wRitmo"></div>' +
+      '</div>' +
       '<div class="field"><label>FC média (bpm)</label><input type="number" id="wFcMedia"></div>' +
       '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="wFcMax"></div>' +
-      '<div class="field"><label>Minutos em zona 1-2 (base aeróbica — o alvo do plano atual, ver Análise)</label><input type="number" step="0.1" id="wZona12"></div>' +
-      '<div class="field"><label>Minutos em zona 4-5 (intensidade alta — verificação, não a meta principal agora)</label><input type="number" step="0.1" id="wZonaAlta"></div>' +
+      '<div class="field"><label id="wZona12Label">Minutos em zona 1-2</label><input type="number" step="0.1" id="wZona12"></div>' +
+      '<div class="field"><label id="wZonaAltaLabel">Minutos em zona 4-5</label><input type="number" step="0.1" id="wZonaAlta"></div>' +
       '<div class="field"><label>Calorias ativas (kcal)</label><input type="number" id="wCalorias"></div>' +
       '</div>' +
       '<div class="field"><label>RPE/Esforço desse treino (1-10)</label><input type="number" min="1" max="10" id="wRpe"></div>' +
@@ -2823,6 +2856,18 @@
     semWatchEl.addEventListener("change", function(){
       camposWatchEl.style.display = semWatchEl.checked ? "none" : "";
     });
+    var wTipoEl = document.getElementById("wTipo");
+    var camposDistRitmoEl = document.getElementById("wCamposDistanciaRitmo");
+    var zona12LabelEl = document.getElementById("wZona12Label");
+    var zonaAltaLabelEl = document.getElementById("wZonaAltaLabel");
+    function applyTipoWatchFields(){
+      var cfg = watchTipoFieldConfig(wTipoEl.value);
+      camposDistRitmoEl.style.display = cfg.showDistanciaRitmo ? "" : "none";
+      zona12LabelEl.textContent = cfg.zona12Label;
+      zonaAltaLabelEl.textContent = cfg.zonaAltaLabel;
+    }
+    applyTipoWatchFields();
+    wTipoEl.addEventListener("change", applyTipoWatchFields);
     document.getElementById("btnSalvarAnalise").addEventListener("click", function(){
       var semWatch = semWatchEl.checked;
       var doc = {
@@ -2863,18 +2908,21 @@
   // sair do modo edição.
   function renderWatchEditFormHtml(w){
     var tipoLabel = TIPOS_ATIVIDADE[w.tipoAtividade] || "";
+    var cfg = watchTipoFieldConfig(w.tipoAtividade); // Sessão 3.26 — mesmo campo/label dinâmico do formulário de registro novo
     var html = '<div class="panel">' +
       '<h2>Editar registro do Apple Watch</h2>' +
       '<p class="sub">' + fmtDateBR(w.data) + (tipoLabel ? ' · ' + tipoLabel : '') + '</p>' +
       '<p class="note">Corrija ou complete valores desse registro (ex.: campo que não existia quando você salvou, como "zona 1-2"). Não muda a data nem o tipo de atividade — só os números.</p>' +
       '<label class="field-check"><input type="checkbox" id="weSemWatch"' + (w.semWatch ? ' checked' : '') + '> Sem dados do Apple Watch nessa sessão</label>' +
       '<div id="weCamposWatch">' +
-      '<div class="field"><label>Distância (km, se aplicável)</label><input type="number" step="0.01" id="weDistancia" value="' + (w.distancia||'') + '"></div>' +
-      '<div class="field"><label>Ritmo médio (min/km, se corrida)</label><input type="text" placeholder="Ex: 7min40s/km" id="weRitmo" value="' + (w.ritmo||'') + '"></div>' +
+      (cfg.showDistanciaRitmo ?
+        '<div class="field"><label>Distância (km)</label><input type="number" step="0.01" id="weDistancia" value="' + (w.distancia||'') + '"></div>' +
+        '<div class="field"><label>Ritmo médio (min/km)</label><input type="text" placeholder="Ex: 7min40s/km" id="weRitmo" value="' + (w.ritmo||'') + '"></div>'
+      : '') +
       '<div class="field"><label>FC média (bpm)</label><input type="number" id="weFcMedia" value="' + (w.fcMedia||'') + '"></div>' +
       '<div class="field"><label>FC máxima (bpm)</label><input type="number" id="weFcMax" value="' + (w.fcMax||'') + '"></div>' +
-      '<div class="field"><label>Minutos em zona 1-2 (base aeróbica — o alvo do plano atual, ver Análise)</label><input type="number" step="0.1" id="weZona12" value="' + (w.zona12||'') + '"></div>' +
-      '<div class="field"><label>Minutos em zona 4-5 (intensidade alta — verificação, não a meta principal agora)</label><input type="number" step="0.1" id="weZonaAlta" value="' + (w.zonaAlta||'') + '"></div>' +
+      '<div class="field"><label>' + cfg.zona12Label + '</label><input type="number" step="0.1" id="weZona12" value="' + (w.zona12||'') + '"></div>' +
+      '<div class="field"><label>' + cfg.zonaAltaLabel + '</label><input type="number" step="0.1" id="weZonaAlta" value="' + (w.zonaAlta||'') + '"></div>' +
       '<div class="field"><label>Calorias ativas (kcal)</label><input type="number" id="weCalorias" value="' + (w.calorias||'') + '"></div>' +
       '</div>' +
       '<div class="field"><label>Duração (min)</label><input type="number" id="weDuracao" value="' + (w.duracao||'') + '"></div>' +
@@ -2906,10 +2954,16 @@
 
   function saveWatchEdit(watchId){
     var semWatch = document.getElementById("weSemWatch").checked;
+    // Sessão 3.26 — Distância/Ritmo podem nem existir no DOM aqui (só são
+    // renderizados quando o tipo de atividade do registro é de endurance,
+    // ver watchTipoFieldConfig/renderWatchEditFormHtml), então lê com
+    // guarda em vez de presumir que o elemento existe.
+    var weDistanciaEl = document.getElementById("weDistancia");
+    var weRitmoEl = document.getElementById("weRitmo");
     var partial = {
       duracao: document.getElementById("weDuracao").value,
-      distancia: semWatch ? "" : document.getElementById("weDistancia").value,
-      ritmo: semWatch ? "" : document.getElementById("weRitmo").value,
+      distancia: (semWatch || !weDistanciaEl) ? "" : weDistanciaEl.value,
+      ritmo: (semWatch || !weRitmoEl) ? "" : weRitmoEl.value,
       fcMedia: semWatch ? "" : document.getElementById("weFcMedia").value,
       fcMax: semWatch ? "" : document.getElementById("weFcMax").value,
       zona12: semWatch ? "" : document.getElementById("weZona12").value,
